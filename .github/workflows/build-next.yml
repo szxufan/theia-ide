@@ -55,7 +55,7 @@ jobs:
         run: |
           yarn --skip-integrity-check --network-timeout 100000
           yarn release:prepare --theia $THEIA_VERSION --ide $THEIA_IDE_VERSION
-          yarn build
+          yarn build:npm
           yarn download:plugins
           yarn package:applications
         env:

@@ -1,0 +1,4 @@
+[submodule "theia"]
+	path = theia
+	url = https://github.com/szxufan/theia.git
+	branch = master

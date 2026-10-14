@@ -1,0 +1,4 @@
+# The theia framework git submodule is not used by the Docker builds
+# (they build against the npm-published @theia/* packages) and would
+# add ~1 GB to the build context.
+theia

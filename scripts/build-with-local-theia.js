@@ -1,22 +1,26 @@
 #!/usr/bin/env node
 
 /**
- * Script to build Theia IDE with a local Theia framework development version.
+ * Script to build Theia IDE against the Theia framework git submodule.
  *
- * This allows testing Theia IDE changes against local Theia framework modifications
- * without publishing to npm first. It expects a locally cloned version of the
- * Theia repository (https://github.com/eclipse-theia/theia) that will be linked
- * into the Theia IDE build.
+ * The framework lives in the `theia` git submodule (a fork of
+ * https://github.com/eclipse-theia/theia) checked out at the commit matching
+ * the @theia/* versions this IDE depends on. This script builds the submodule,
+ * symlinks its packages into the IDE's node_modules and then builds the IDE,
+ * so framework modifications can be tested without publishing to npm first.
+ * A different checkout can still be used via --theia-path.
  *
  * Usage:
  *   node scripts/build-with-local-theia.js [options]
  *
  * Options:
- *   --theia-path <path>   Path to local Theia repository [default: ../theia]
+ *   --theia-path <path>   Path to local Theia repository [default: ./theia submodule]
+ *   --apps <target>       Applications to build: stable | next | all [default: stable]
+ *   --prod                Build applications in production mode (build:prod) instead of dev
  *   --skip-theia-build    Skip building Theia packages (use if already built) [default: false]
- *   --skip-ide-build      Skip building Theia IDE (use for linking only) [default: false]
+ *   --skip-ide-build      Skip building the IDE (use for linking only) [default: false]
  *   --skip-plugins        Skip downloading plugins [default: false]
- *   --package             Package the electron-next application after building [default: false]
+ *   --package             Package the selected applications after building [default: false]
  *   --unlink              Remove links and restore npm dependencies [default: false]
  *   --dry-run             Print commands without executing them [default: false]
  *   --help                Show this help message
@@ -29,7 +33,8 @@ const fs = require('fs');
 const path = require('path');
 
 const ROOT_DIR = path.resolve(__dirname, '..');
-const DEFAULT_THEIA_PATH = path.resolve(ROOT_DIR, '..', 'theia');
+const SUBMODULE_DIR = 'theia';
+const DEFAULT_THEIA_PATH = path.join(ROOT_DIR, SUBMODULE_DIR);
 
 // Parse command line arguments
 const args = process.argv.slice(2);
@@ -44,6 +49,8 @@ function getArgValue(flag, defaultValue) {
 
 const options = {
     theiaPath: path.resolve(getArgValue('--theia-path', DEFAULT_THEIA_PATH)),
+    apps: getArgValue('--apps', 'stable'),
+    prod: args.includes('--prod'),
     skipTheiaBuild: args.includes('--skip-theia-build'),
     skipIdeBuild: args.includes('--skip-ide-build'),
     skipPlugins: args.includes('--skip-plugins'),
@@ -53,31 +60,39 @@ const options = {
     help: args.includes('--help')
 };
 
+if (!['stable', 'next', 'all'].includes(options.apps)) {
+    console.error(`Error: invalid --apps value "${options.apps}" (expected stable, next or all)`);
+    process.exit(1);
+}
+
 if (options.help) {
     console.log(`
 Usage: node scripts/build-with-local-theia.js [options]
 
-This script builds the Theia IDE against a local Theia framework checkout,
-allowing you to test framework changes without publishing to npm first.
-
-The script symlinks the local Theia packages into the IDE's node_modules,
-pointing explicitly at the given --theia-path (works with any location,
-including git worktrees).
+This script builds the Theia IDE against the Theia framework git submodule
+(theia/), allowing you to test framework changes without publishing to npm
+first. The script symlinks the submodule's packages into the IDE's
+node_modules, pointing explicitly at the given --theia-path (works with any
+location, including git worktrees).
 
 Note: This script does not update the IDE version or Theia package versions.
 It uses the current state of both repositories. If needed, you can run
 versioning commands (e.g., yarn update:theia) separately before building.
 
 Prerequisites:
-  A local clone of the Theia repository (https://github.com/eclipse-theia/theia).
-  By default, the script expects it at ../theia (next to the theia-ide directory).
+  The \`theia\` git submodule (git@github.com:szxufan/theia.git). It is
+  initialized automatically if missing; or manually via:
+    git submodule update --init theia
 
 Options:
-  --theia-path <path>   Path to local Theia repository [default: ../theia]
+  --theia-path <path>   Path to local Theia repository [default: ./theia submodule]
+  --apps <target>       Applications to build: stable | next | all [default: stable]
+                        stable = browser + electron, next = electron-next
+  --prod                Build applications in production mode (build:prod) instead of dev
   --skip-theia-build    Skip building Theia packages (use if already built) [default: false]
-  --skip-ide-build      Skip building Theia IDE (use for linking only) [default: false]
+  --skip-ide-build      Skip building the IDE (use for linking only) [default: false]
   --skip-plugins        Skip downloading plugins [default: false]
-  --package             Package the electron-next application after building [default: false]
+  --package             Package the selected applications after building [default: false]
   --unlink              Remove links and restore npm dependencies [default: false]
   --dry-run             Print commands without executing them [default: false]
   --help                Show this help message
@@ -305,7 +320,7 @@ function idePackagePath(dep) {
  * packages. Symlinks point explicitly at the requested --theia-path, so the
  * build always resolves against that checkout. This avoids yarn's global link
  * registry, which is keyed by package name and silently keeps pointing at a
- * previously linked path (e.g. the default ../theia) instead of a worktree.
+ * previously linked path (e.g. the submodule) instead of a worktree.
  */
 function linkTheiaPackages() {
     console.log(`\n${'='.repeat(60)}`);
@@ -408,6 +423,93 @@ function unlinkTheiaPackages() {
 }
 
 /**
+ * The lerna build command for the selected application target.
+ */
+function applicationBuildCommand() {
+    const mode = options.prod ? 'prod' : 'dev';
+    const commands = {
+        stable: { prod: 'yarn build:applications', dev: 'yarn build:applications:dev' },
+        next: { prod: 'yarn build:applications:next', dev: 'yarn build:applications:next:dev' },
+        all: {
+            prod: 'yarn build:applications && yarn build:applications:next',
+            dev: 'yarn build:applications:dev && yarn build:applications:next:dev'
+        }
+    };
+    return commands[options.apps][mode];
+}
+
+/**
+ * The lerna package command for the selected application target.
+ */
+function applicationPackageCommand() {
+    const commands = {
+        stable: 'yarn package:applications',
+        next: 'yarn package:applications:next',
+        all: 'yarn package:applications && yarn package:applications:next'
+    };
+    return commands[options.apps];
+}
+
+/**
+ * Warn when the Theia checkout clearly does not match the @theia/* versions
+ * this IDE depends on. Note that Theia publishes `1.X.0-next.*` pre-releases
+ * from master commits whose package.json still carries the previous stable
+ * version (the CI bumps the version during publishing without committing it
+ * back). A checkout at 1.76.0 is therefore the correct source of
+ * 1.77.0-next.*; only report a mismatch when the required version belongs to
+ * neither the checkout's stable line nor its next line.
+ */
+function checkVersionAlignment() {
+    const corePkgPath = path.join(options.theiaPath, 'packages', 'core', 'package.json');
+    if (!fs.existsSync(corePkgPath)) {
+        return;
+    }
+    const coreVersion = String(readJson(corePkgPath).version);
+    const coreBase = coreVersion.split('-')[0];
+    const [major, minor] = coreBase.split('.').map(Number);
+    const coreNextBase = `${major}.${minor + 1}.0`;
+
+    // Look up the pinned @theia/* version from any IDE package.json.
+    const pkgDirs = [
+        path.join(ROOT_DIR, 'package.json'),
+        ...['electron', 'browser', 'electron-next'].map(app => path.join(ROOT_DIR, 'applications', app, 'package.json')),
+        ...['launcher', 'product', 'updater'].map(ext => path.join(ROOT_DIR, 'theia-extensions', ext, 'package.json'))
+    ];
+    let requiredVersion;
+    for (const pkgDir of pkgDirs) {
+        if (!fs.existsSync(pkgDir)) {
+            continue;
+        }
+        const pkg = readJson(pkgDir);
+        const deps = { ...pkg.dependencies, ...pkg.devDependencies };
+        for (const name of Object.keys(deps)) {
+            if (name.startsWith('@theia/') && name !== '@theia/cli') {
+                const version = deps[name];
+                if (/^\d+\.\d+\.\d+/.test(version)) {
+                    requiredVersion = version;
+                    break;
+                }
+            }
+        }
+        if (requiredVersion) {
+            break;
+        }
+    }
+
+    if (!requiredVersion) {
+        return;
+    }
+    const requiredBase = requiredVersion.split('-')[0];
+    if (requiredBase !== coreBase && requiredBase !== coreNextBase) {
+        console.log(`\nWarning: version mismatch between the Theia checkout and the IDE dependencies:`);
+        console.log(`  Theia checkout @theia/core: ${coreVersion} (stable line ${coreBase}, next line ${coreNextBase}-next.*)`);
+        console.log(`  IDE requires:               ${requiredVersion}`);
+        console.log('  Building across these versions is likely to fail or break at runtime.');
+        console.log('  Align them, e.g. git -C theia checkout <commit matching the IDE deps>, or run yarn update:theia.\n');
+    }
+}
+
+/**
  * Build IDE
  */
 function buildIde() {
@@ -422,7 +524,7 @@ function buildIde() {
     // in theia-ide/node_modules to copy from
     syncMissingFrameworkDeps();
     run('yarn build:extensions', ROOT_DIR, 'Build IDE extensions');
-    run('yarn build:applications:next:dev', ROOT_DIR, 'Build electron-next application');
+    run(applicationBuildCommand(), ROOT_DIR, `Build IDE applications (${options.apps}, ${options.prod ? 'prod' : 'dev'})`);
     if (!options.skipPlugins) {
         run('yarn download:plugins', ROOT_DIR, 'Download plugins');
     } else {
@@ -597,14 +699,14 @@ function ensureElectronDist() {
 }
 
 /**
- * Package the electron-next application
+ * Package the selected applications
  */
 function packageApp() {
     // sync covers the --skip-ide-build --package path where buildIde did not run
     syncMissingFrameworkDeps();
     // Make sure node_modules/electron/dist exists, else electron-builder aborts
     ensureElectronDist();
-    run('yarn package:applications:next', ROOT_DIR, 'Package electron-next application');
+    run(applicationPackageCommand(), ROOT_DIR, `Package applications (${options.apps})`);
 }
 
 /**
@@ -619,14 +721,22 @@ async function main() {
     if (options.unlink) {
         unlinkTheiaPackages();
     } else {
-        // Verify Theia exists
+        // Verify Theia exists; initialize the git submodule automatically when
+        // the default (submodule) path is used and has not been checked out yet.
         if (!fs.existsSync(options.theiaPath)) {
-            console.error(`\nError: Theia directory not found at ${options.theiaPath}`);
-            console.error('\nPlease clone the Theia repository first:');
-            console.error('  git clone https://github.com/eclipse-theia/theia.git ../theia');
-            console.error('\nOr specify a different location with --theia-path');
-            process.exit(1);
+            if (options.theiaPath === DEFAULT_THEIA_PATH) {
+                run(`git submodule update --init --recursive ${SUBMODULE_DIR}`, ROOT_DIR, 'Initialize theia submodule');
+                if (!options.dryRun && !fs.existsSync(options.theiaPath)) {
+                    console.error(`\nError: submodule initialization did not create ${options.theiaPath}`);
+                    process.exit(1);
+                }
+            } else {
+                console.error(`\nError: Theia directory not found at ${options.theiaPath}`);
+                console.error('\nPlease clone the Theia repository first or specify a different location with --theia-path');
+                process.exit(1);
+            }
         }
+        checkVersionAlignment();
 
         // Build Theia
         if (!options.skipTheiaBuild) {
@@ -659,18 +769,23 @@ async function main() {
     console.log(`Total time: ${elapsed} minutes`);
 
     if (!options.unlink && !options.package) {
+        const startCommands = {
+            stable: 'yarn --cwd applications/browser start   # or: yarn --cwd applications/electron start',
+            next: 'yarn --cwd applications/electron-next start',
+            all: 'yarn --cwd applications/browser start   # also: applications/electron, applications/electron-next'
+        };
         console.log(`
 Next steps:
-  - Run the IDE: yarn --cwd applications/electron-next start
+  - Run the IDE: ${startCommands[options.apps]}
   - Make changes in Theia, rebuild: (cd ${options.theiaPath} && npm run compile)
-  - Rebuild IDE: yarn build:applications:next:dev
-  - Package the app: node scripts/build-with-local-theia.js --skip-theia-build --skip-ide-build --package
+  - Rebuild IDE apps: node scripts/build-with-local-theia.js --skip-theia-build
+  - Package the apps: node scripts/build-with-local-theia.js --skip-theia-build --skip-ide-build --package
   - When done, restore npm deps: node scripts/build-with-local-theia.js --unlink
 `);
     }
 
     if (options.package) {
-        console.log('\nPackaged application is in: applications/electron-next/dist/');
+        console.log(`\nPackaged applications are in: applications/{electron,browser,electron-next}/dist/`);
     }
 
     if (options.dryRun) {
