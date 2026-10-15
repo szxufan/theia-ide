@@ -44,18 +44,18 @@ jobs:
       - name: Build next package
         shell: bash
         run: |
-          yarn --skip-integrity-check --network-timeout 100000
-          yarn release:prepare --theia $THEIA_VERSION --ide $THEIA_IDE_VERSION
-          yarn build:extensions
-          yarn build:applications:next
-          yarn download:plugins
-          yarn package:applications:next
+          pnpm install --no-frozen-lockfile
+          pnpm release:prepare --theia $THEIA_VERSION --ide $THEIA_IDE_VERSION
+          pnpm build:extensions
+          pnpm build:applications:next
+          pnpm download:plugins
+          pnpm package:applications:next
         env:
           NODE_OPTIONS: --max_old_space_size=4096
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Test (Linux)
-        run: xvfb-run -a yarn --cwd applications/electron-next test
+        run: xvfb-run -a pnpm --dir applications/electron-next test
 
       - name: Upload Linux Dist Files
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0

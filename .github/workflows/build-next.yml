@@ -53,11 +53,11 @@ jobs:
       - name: Build prod package
         shell: bash
         run: |
-          yarn --skip-integrity-check --network-timeout 100000
-          yarn release:prepare --theia $THEIA_VERSION --ide $THEIA_IDE_VERSION
-          yarn build:npm
-          yarn download:plugins
-          yarn package:applications
+          pnpm install --no-frozen-lockfile
+          pnpm release:prepare --theia $THEIA_VERSION --ide $THEIA_IDE_VERSION
+          pnpm build:npm
+          pnpm download:plugins
+          pnpm package:applications
         env:
           NODE_OPTIONS: --max_old_space_size=4096
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # https://github.com/microsoft/vscode-ripgrep/issues/9

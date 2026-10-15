@@ -1,0 +1,5 @@
+packages:
+  - applications/*
+  - theia-extensions/*
+  - theia/packages/*
+  - theia/dev-packages/*

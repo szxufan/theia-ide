@@ -4,11 +4,11 @@
   "version": "1.77.0-next-2026-10-07",
   "description": "Eclipse Theia IDE Product Branding",
   "dependencies": {
-    "@theia/ai-registry": "1.77.0-next.25",
-    "@theia/core": "1.77.0-next.25",
-    "@theia/getting-started": "1.77.0-next.25",
-    "@theia/vsx-registry": "1.77.0-next.25",
-    "@theia/workspace": "1.77.0-next.25",
+    "@theia/ai-registry": "workspace:*",
+    "@theia/core": "workspace:*",
+    "@theia/getting-started": "workspace:*",
+    "@theia/vsx-registry": "workspace:*",
+    "@theia/workspace": "workspace:*",
     "inversify": "^6.2.2"
   },
   "devDependencies": {

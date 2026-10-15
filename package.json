@@ -12,7 +12,6 @@
     "url": "git+https://github.com/eclipse-theia/theia-ide.git"
   },
   "engines": {
-    "yarn": ">=1.7.0 <2",
     "node": ">=24"
   },
   "devDependencies": {
@@ -33,7 +32,8 @@
     "rimraf": "^2.7.1",
     "ts-node": "^10.9.2",
     "type-fest": "^0.20.2",
-    "yargs": "^17.7.3"
+    "yargs": "^17.7.3",
+    "@theia/cli": "workspace:*"
   },
   "scripts": {
     "clean": "lerna run clean && rimraf node_modules",
@@ -41,8 +41,8 @@
     "build:dev": "node scripts/build-with-local-theia.js --apps stable",
     "build:next": "node scripts/build-with-local-theia.js --apps next --prod",
     "build:next:dev": "node scripts/build-with-local-theia.js --apps next",
-    "build:npm": "yarn build:extensions && yarn build:applications",
-    "build:npm:dev": "yarn build:extensions && yarn build:applications:dev",
+    "build:npm": "pnpm build:extensions && pnpm build:applications",
+    "build:npm:dev": "pnpm build:extensions && pnpm build:applications:dev",
     "build:applications": "lerna run --scope=\"theia-ide*app\" --ignore=\"theia-ide-next*\" build:prod --concurrency 1",
     "build:applications:dev": "lerna run --scope=\"theia-ide*app\" --ignore=\"theia-ide-next*\" build --concurrency 1",
     "build:applications:next": "lerna run --scope=\"theia-ide-next*\" build:prod --concurrency 1",
@@ -52,7 +52,7 @@
     "theia:init": "git submodule update --init --recursive theia",
     "theia:sync": "node scripts/sync-theia-upstream.js",
     "theia:update": "git submodule update --remote theia",
-    "download:plugins": "theia download:plugins --rate-limit=15 --parallel=false && yarn permissions:writeable",
+    "download:plugins": "theia download:plugins --rate-limit=15 --parallel=false && pnpm permissions:writeable",
     "package:applications": "lerna run --scope=\"theia-ide*app\" --ignore=\"theia-ide-next*\" package --concurrency 1",
     "package:applications:preview": "lerna run --scope=\"theia-ide*app\" --ignore=\"theia-ide-next*\" package:preview --concurrency 1",
     "package:applications:prod": "lerna run --scope=\"theia-ide*app\" --ignore=\"theia-ide-next*\" package:prod --concurrency 1",
@@ -60,9 +60,9 @@
     "permissions:writeable": "ts-node scripts/make-files-writeable.ts plugins",
     "watch": "lerna run --parallel watch",
     "test": "lerna run test",
-    "electron": "yarn --cwd applications/electron",
-    "electron-next": "yarn --cwd applications/electron-next",
-    "browser": "yarn --cwd applications/browser",
+    "electron": "pnpm --dir applications/electron",
+    "electron-next": "pnpm --dir applications/electron-next",
+    "browser": "pnpm --dir applications/browser",
     "update:theia": "ts-node scripts/update-theia-version.ts",
     "update:theia:children": "lerna run update:theia -- ",
     "update:next": "ts-node scripts/update-theia-version.ts next && lerna run update:next",
@@ -70,8 +70,8 @@
     "lint": "eslint --ext js,jsx,ts,tsx scripts && lerna run lint",
     "lint:fix": "eslint --ext js,jsx,ts,tsx scripts --fix && lerna run lint:fix",
     "license:check:fetch-jar": "node scripts/fetch-dash-licenses-jar.js",
-    "license:check": "yarn license:check:fetch-jar && npx dash-licenses-wrapper  --configFile=./configs/license-check-config.json",
-    "license:check:review": "yarn license:check:fetch-jar && npx dash-licenses-wrapper  --configFile=./configs/license-check-config.json --review",
+    "license:check": "pnpm license:check:fetch-jar && npx dash-licenses-wrapper --configFile=./configs/license-check-config.json",
+    "license:check:review": "pnpm license:check:fetch-jar && npx dash-licenses-wrapper --configFile=./configs/license-check-config.json --review",
     "postinstall": "theia-patch && node scripts/build-with-local-theia.js --postinstall"
   },
   "theiaPluginsDir": "plugins",
@@ -92,27 +92,27 @@
     "theia/packages/*",
     "theia/dev-packages/*"
   ],
-  "resolutions": {
+  "overrides": {
     "@types/puppeteer": "^5.4.7",
-    "**/yauzl": "^3.3.1",
-    "**/@tootallnate/once": "^2.0.1",
-    "**/adm-zip": "^0.6.0",
-    "**/axios": "^1.20.0",
-    "**/basic-ftp": "^6.2.3",
-    "**/cross-spawn": "^7.0.6",
-    "**/dompurify": "^3.4.13",
-    "**/globule/minimatch": "^3.1.5",
-    "**/mocha/diff": "^8.0.3",
-    "**/nx/brace-expansion": "^5.0.9",
-    "**/pacote": "^21.5.1",
-    "**/serialize-javascript": "^7.1.0",
-    "**/simple-git": "^4.0.2",
-    "**/smol-toml": "^1.9.1",
-    "**/tmp": "^0.2.6",
-    "**/tar": "^7.5.22",
-    "**/uuid": "^11.1.1",
-    "**/mocha": "^11.0.0",
-    "lerna/js-yaml": "^4.3.1",
-    "@puppeteer/browsers": "3.2.4"
+    "yauzl": "^3.3.1",
+    "@tootallnate/once": "^2.0.1",
+    "adm-zip": "^0.6.0",
+    "axios": "^1.20.0",
+    "basic-ftp": "^6.2.3",
+    "cross-spawn": "^7.0.6",
+    "dompurify": "^3.4.13",
+    "pacote": "^21.5.1",
+    "serialize-javascript": "^7.1.0",
+    "simple-git": "^4.0.2",
+    "smol-toml": "^1.9.1",
+    "tmp": "^0.2.6",
+    "tar": "^7.5.22",
+    "uuid": "^11.1.1",
+    "mocha": "^11.0.0",
+    "@puppeteer/browsers": "3.2.4",
+    "globule>minimatch": "^3.1.5",
+    "mocha>diff": "^8.0.3",
+    "nx>brace-expansion": "^5.0.9",
+    "lerna>js-yaml": "^4.3.1"
   }
 }

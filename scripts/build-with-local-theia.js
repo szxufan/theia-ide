@@ -21,9 +21,9 @@
  *   --skip-ide-build      Skip building the IDE (use for linking only) [default: false]
  *   --skip-plugins        Skip downloading plugins [default: false]
  *   --package             Package the selected applications after building [default: false]
- *   --postinstall         Lightweight mode for the yarn postinstall hook: ensure the
+ *   --postinstall         Lightweight mode for the pnpm postinstall hook: ensure the
  *                         framework is compiled and linked, but never install or build
- *                         the IDE (yarn install already ran) [default: false]
+ *                         the IDE (pnpm install already ran) [default: false]
  *   --unlink              Remove links and restore npm dependencies [default: false]
  *   --dry-run             Print commands without executing them [default: false]
  *   --help                Show this help message
@@ -254,66 +254,23 @@ function findUnpublishedLocalDeps() {
 }
 
 /**
- * Run a yarn install command. Any required @theia/* packages that exist only
- * in the local checkout (unpublished) would make yarn fail while resolving
- * them against the npm registry. To avoid this, temporarily add `file:`
- * resolutions pointing at the local checkout so the install succeeds; the
- * subsequent linkTheiaPackages step replaces them with symlinks anyway.
- *
- * package.json and yarn.lock are restored afterwards so the repository is not
- * left with machine-specific paths.
+ * Run a pnpm install. All @theia/* dependencies are declared as
+ * "workspace:*" so pnpm resolves them to the local checkout by definition;
+ * a missing workspace package makes the install fail loudly rather than
+ * silently falling back to the npm registry.
  */
 function runYarnInstall(cmd, description) {
-    // Suppress the postinstall link hook for this nested install: this script
-    // performs its own install/link sequence right afterwards.
+    // Suppress the postinstall hook for this nested install: this script
+    // performs its own verification right afterwards.
     const hadGuard = process.env.THEIA_IDE_SKIP_POSTINSTALL_LINK;
     process.env.THEIA_IDE_SKIP_POSTINSTALL_LINK = '1';
     try {
-        runYarnInstallInner(cmd, description);
+        run('pnpm install', ROOT_DIR, description);
     } finally {
         if (hadGuard === undefined) {
             delete process.env.THEIA_IDE_SKIP_POSTINSTALL_LINK;
         } else {
             process.env.THEIA_IDE_SKIP_POSTINSTALL_LINK = hadGuard;
-        }
-    }
-}
-
-function runYarnInstallInner(cmd, description) {
-    const unpublished = findUnpublishedLocalDeps();
-    if (unpublished.size === 0) {
-        run(cmd, ROOT_DIR, description);
-        return;
-    }
-
-    console.log('\nUnpublished local @theia packages detected (added as temporary file: resolutions):');
-    unpublished.forEach((localPath, dep) => console.log(`  - ${dep} -> ${localPath}`));
-
-    if (options.dryRun) {
-        run(cmd, ROOT_DIR, description);
-        return;
-    }
-
-    const pkgPath = path.join(ROOT_DIR, 'package.json');
-    const lockPath = path.join(ROOT_DIR, 'yarn.lock');
-    const originalPkg = fs.readFileSync(pkgPath, 'utf-8');
-    const originalLock = fs.existsSync(lockPath) ? fs.readFileSync(lockPath, 'utf-8') : undefined;
-
-    const pkg = JSON.parse(originalPkg);
-    pkg.resolutions = pkg.resolutions || {};
-    unpublished.forEach((localPath, dep) => {
-        pkg.resolutions[dep] = `file:${localPath}`;
-    });
-    fs.writeFileSync(pkgPath, `${JSON.stringify(pkg, undefined, 2)}\n`);
-
-    try {
-        run(cmd, ROOT_DIR, description);
-    } finally {
-        // Restore so the repo is not left with local file: paths. node_modules
-        // already contains the packages; linkTheiaPackages will symlink them.
-        fs.writeFileSync(pkgPath, originalPkg);
-        if (originalLock !== undefined) {
-            fs.writeFileSync(lockPath, originalLock);
         }
     }
 }
@@ -361,7 +318,7 @@ function verifyTheiaResolution() {
         console.error('\nError: @theia/* packages do not resolve to the local framework checkout:');
         offenders.forEach(o => console.error(`  - ${o}`));
         console.error('Add "theia/packages/*" and "theia/dev-packages/*" to the workspaces in the root package.json');
-        console.error('and re-run yarn install. Refusing to continue with npm-published framework packages.');
+        console.error('and re-run pnpm install. Refusing to continue with npm-published framework packages.');
         process.exit(1);
     }
     console.log(`Verified ${requiredDeps.size} @theia/* packages resolve to ${options.theiaPath}`);
@@ -477,7 +434,7 @@ function unlinkTheiaPackages() {
 
     // Reinstall to restore npm versions. Unpublished local packages still need
     // temporary file: resolutions, otherwise this reinstall fails the same way.
-    runYarnInstall('yarn --force', 'Reinstall npm dependencies');
+    runYarnInstall(undefined, 'Reinstall dependencies');
 
     console.log('\nLinks removed and npm dependencies restored');
 }
@@ -488,11 +445,11 @@ function unlinkTheiaPackages() {
 function applicationBuildCommand() {
     const mode = options.prod ? 'prod' : 'dev';
     const commands = {
-        stable: { prod: 'yarn build:applications', dev: 'yarn build:applications:dev' },
-        next: { prod: 'yarn build:applications:next', dev: 'yarn build:applications:next:dev' },
+        stable: { prod: 'pnpm build:applications', dev: 'pnpm build:applications:dev' },
+        next: { prod: 'pnpm build:applications:next', dev: 'pnpm build:applications:next:dev' },
         all: {
-            prod: 'yarn build:applications && yarn build:applications:next',
-            dev: 'yarn build:applications:dev && yarn build:applications:next:dev'
+            prod: 'pnpm build:applications && pnpm build:applications:next',
+            dev: 'pnpm build:applications:dev && pnpm build:applications:next:dev'
         }
     };
     return commands[options.apps][mode];
@@ -583,7 +540,7 @@ function buildIde() {
     // sync must run after install+link so the missing transitives are present
     // in theia-ide/node_modules to copy from
     syncMissingFrameworkDeps();
-    run('yarn build:extensions', ROOT_DIR, 'Build IDE extensions');
+    run('pnpm build:extensions', ROOT_DIR, 'Build IDE extensions');
     run(applicationBuildCommand(), ROOT_DIR, `Build IDE applications (${options.apps}, ${options.prod ? 'prod' : 'dev'})`);
     if (!options.skipPlugins) {
         run('yarn download:plugins', ROOT_DIR, 'Download plugins');
@@ -861,9 +818,9 @@ async function main() {
 
     if (!options.unlink && !options.package) {
         const startCommands = {
-            stable: 'yarn --cwd applications/browser start   # or: yarn --cwd applications/electron start',
-            next: 'yarn --cwd applications/electron-next start',
-            all: 'yarn --cwd applications/browser start   # also: applications/electron, applications/electron-next'
+            stable: 'pnpm --dir applications/browser start   # or: pnpm --dir applications/electron start',
+            next: 'pnpm --dir applications/electron-next start',
+            all: 'pnpm --dir applications/browser start   # also: applications/electron, applications/electron-next'
         };
         console.log(`
 Next steps:

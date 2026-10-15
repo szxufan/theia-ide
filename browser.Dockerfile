@@ -9,21 +9,16 @@ WORKDIR /home/theia
 # Copy repository files
 COPY . .
 
-# Remove unnecesarry files for the browser application
-# Download plugins and build application production mode
-# Use yarn autoclean to remove unnecessary files from package dependencies
-RUN yarn config set network-timeout 600000 -g && \
-    yarn --pure-lockfile && \
-    yarn build:extensions && \
-    yarn download:plugins && \
-    yarn browser build && \
-    yarn && \
-    yarn autoclean --init && \
-    echo *.ts >> .yarnclean && \
-    echo *.ts.map >> .yarnclean && \
-    echo *.spec.* >> .yarnclean && \
-    yarn autoclean --force && \
-    yarn cache clean && \
+# Build with pnpm: the root postinstall compiles the theia framework submodule
+# and links it via workspace:* dependencies, so the image contains the
+# framework modifications. Reproducible via the committed pnpm-lock.yaml.
+RUN npm install -g pnpm@9 && \
+    pnpm config set network-timeout 600000 && \
+    pnpm install --frozen-lockfile && \
+    pnpm build:extensions && \
+    pnpm download:plugins && \
+    pnpm browser build && \
+    pnpm store prune && \
     rm -rf .git applications/electron theia-extensions/launcher theia-extensions/updater node_modules
 
 # Production stage uses a small base image
