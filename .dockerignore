@@ -1,4 +1,10 @@
-# The theia framework git submodule is not used by the Docker builds
-# (they build against the npm-published @theia/* packages) and would
-# add ~1 GB to the build context.
-theia
+# The build context needs the theia framework submodule: the root postinstall
+# compiles it and links its packages into node_modules, so that the image
+# contains the framework modifications (e.g. built-in Chinese localization)
+# instead of the npm-published @theia/* packages.
+
+# Keep build-irrelevant files out of the context
+.git
+.nx
+**/node_modules
+**/lib

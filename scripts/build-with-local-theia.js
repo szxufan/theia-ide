@@ -21,6 +21,9 @@
  *   --skip-ide-build      Skip building the IDE (use for linking only) [default: false]
  *   --skip-plugins        Skip downloading plugins [default: false]
  *   --package             Package the selected applications after building [default: false]
+ *   --postinstall         Lightweight mode for the yarn postinstall hook: ensure the
+ *                         framework is compiled and linked, but never install or build
+ *                         the IDE (yarn install already ran) [default: false]
  *   --unlink              Remove links and restore npm dependencies [default: false]
  *   --dry-run             Print commands without executing them [default: false]
  *   --help                Show this help message
@@ -55,6 +58,7 @@ const options = {
     skipIdeBuild: args.includes('--skip-ide-build'),
     skipPlugins: args.includes('--skip-plugins'),
     package: args.includes('--package'),
+    postinstall: args.includes('--postinstall'),
     unlink: args.includes('--unlink'),
     dryRun: args.includes('--dry-run'),
     help: args.includes('--help')
@@ -260,6 +264,22 @@ function findUnpublishedLocalDeps() {
  * left with machine-specific paths.
  */
 function runYarnInstall(cmd, description) {
+    // Suppress the postinstall link hook for this nested install: this script
+    // performs its own install/link sequence right afterwards.
+    const hadGuard = process.env.THEIA_IDE_SKIP_POSTINSTALL_LINK;
+    process.env.THEIA_IDE_SKIP_POSTINSTALL_LINK = '1';
+    try {
+        runYarnInstallInner(cmd, description);
+    } finally {
+        if (hadGuard === undefined) {
+            delete process.env.THEIA_IDE_SKIP_POSTINSTALL_LINK;
+        } else {
+            process.env.THEIA_IDE_SKIP_POSTINSTALL_LINK = hadGuard;
+        }
+    }
+}
+
+function runYarnInstallInner(cmd, description) {
     const unpublished = findUnpublishedLocalDeps();
     if (unpublished.size === 0) {
         run(cmd, ROOT_DIR, description);
@@ -305,6 +325,46 @@ function buildTheia() {
     run('npm ci', options.theiaPath, 'Install Theia dependencies');
     // Compile all Theia packages, no need to build the applications in this case
     run('npm run compile', options.theiaPath, 'Compile Theia packages');
+}
+
+/**
+ * Whether the local Theia checkout is installed and compiled, i.e. ready to
+ * be linked and consumed by an IDE build without running buildTheia().
+ */
+function theiaIsCompiled() {
+    return fs.existsSync(path.join(options.theiaPath, 'node_modules'))
+        && fs.existsSync(path.join(options.theiaPath, 'packages', 'core', 'lib'));
+}
+
+/**
+ * Fail hard when any @theia/* package in node_modules does not resolve into
+ * the local Theia checkout. This is the guard that makes it impossible to
+ * accidentally build against npm-published framework packages.
+ */
+function verifyTheiaResolution() {
+    const requiredDeps = collectAllTheiaDependencies();
+    const offenders = [];
+    for (const dep of requiredDeps) {
+        const linkPath = idePackagePath(dep);
+        let real;
+        try {
+            real = fs.realpathSync(linkPath);
+        } catch {
+            offenders.push(`${dep}: not installed at ${linkPath}`);
+            continue;
+        }
+        if (!real.startsWith(path.resolve(options.theiaPath) + path.sep)) {
+            offenders.push(`${dep}: resolves to ${real} (expected inside ${options.theiaPath})`);
+        }
+    }
+    if (offenders.length > 0) {
+        console.error('\nError: @theia/* packages do not resolve to the local framework checkout:');
+        offenders.forEach(o => console.error(`  - ${o}`));
+        console.error('Add "theia/packages/*" and "theia/dev-packages/*" to the workspaces in the root package.json');
+        console.error('and re-run yarn install. Refusing to continue with npm-published framework packages.');
+        process.exit(1);
+    }
+    console.log(`Verified ${requiredDeps.size} @theia/* packages resolve to ${options.theiaPath}`);
 }
 
 /**
@@ -720,6 +780,37 @@ async function main() {
 
     if (options.unlink) {
         unlinkTheiaPackages();
+    } else if (options.postinstall) {
+        // Postinstall mode: any `yarn install` must leave node_modules pointing
+        // at the local framework, so that every build entry point (yarn browser
+        // build, lerna scripts, theia build, ...) produces a bundle containing
+        // the submodule's code instead of silently using the npm versions.
+        if (process.env.THEIA_IDE_SKIP_POSTINSTALL_LINK === '1') {
+            console.log('\nSkipping local Theia link (nested install)');
+            return;
+        }
+        if (!fs.existsSync(options.theiaPath)) {
+            if (options.theiaPath === DEFAULT_THEIA_PATH) {
+                run(`git submodule update --init --recursive ${SUBMODULE_DIR}`, ROOT_DIR, 'Initialize theia submodule');
+                if (!options.dryRun && !fs.existsSync(options.theiaPath)) {
+                    console.error(`\nError: submodule initialization did not create ${options.theiaPath}`);
+                    process.exit(1);
+                }
+            } else {
+                console.error(`\nError: Theia directory not found at ${options.theiaPath}`);
+                process.exit(1);
+            }
+        }
+        checkVersionAlignment();
+        if (theiaIsCompiled()) {
+            console.log('\nTheia framework already compiled - skipping compile');
+        } else {
+            buildTheia();
+        }
+        // Workspaces in the root package.json make yarn resolve @theia/* from
+        // the local checkout. Verify that and fail loudly: an install that
+        // silently fell back to the npm registry would produce wrong builds.
+        verifyTheiaResolution();
     } else {
         // Verify Theia exists; initialize the git submodule automatically when
         // the default (submodule) path is used and has not been checked out yet.
