@@ -81,7 +81,7 @@ location, including git worktrees).
 
 Note: This script does not update the IDE version or Theia package versions.
 It uses the current state of both repositories. If needed, you can run
-versioning commands (e.g., yarn update:theia) separately before building.
+versioning commands (e.g., pnpm update:theia) separately before building.
 
 Prerequisites:
   The \`theia\` git submodule (git@github.com:szxufan/theia.git). It is
@@ -222,44 +222,12 @@ function collectAllTheiaDependencies() {
 }
 
 /**
- * Determine which required @theia/* dependencies are only available locally,
- * i.e. present in the local Theia checkout but not yet published to npm. Such
- * packages have no entry in the IDE's yarn.lock (published ones always do).
- *
- * These would make `yarn install` abort, since it tries to fetch the declared
- * version from the npm registry before the linking step ever runs. Returns a
- * Map of package name -> local package directory.
- */
-function findUnpublishedLocalDeps() {
-    const theiaPackages = findTheiaPackages(options.theiaPath);
-    const requiredDeps = collectAllTheiaDependencies();
-    const lockfilePath = path.join(ROOT_DIR, 'yarn.lock');
-    const lockfile = fs.existsSync(lockfilePath) ? fs.readFileSync(lockfilePath, 'utf-8') : '';
-
-    const unpublished = new Map();
-    for (const dep of requiredDeps) {
-        const localPath = theiaPackages.get(dep);
-        if (!localPath) {
-            // Not available locally; either published (resolved from npm) or
-            // genuinely missing (reported later by linkTheiaPackages).
-            continue;
-        }
-        // A published dependency always appears as a "<name>@..." key in the
-        // lockfile. Absence means it is local-only and cannot be fetched.
-        if (!lockfile.includes(`${dep}@`)) {
-            unpublished.set(dep, localPath);
-        }
-    }
-    return unpublished;
-}
-
-/**
  * Run a pnpm install. All @theia/* dependencies are declared as
  * "workspace:*" so pnpm resolves them to the local checkout by definition;
  * a missing workspace package makes the install fail loudly rather than
  * silently falling back to the npm registry.
  */
-function runYarnInstall(cmd, description) {
+function runPnpmInstall(description) {
     // Suppress the postinstall hook for this nested install: this script
     // performs its own verification right afterwards.
     const hadGuard = process.env.THEIA_IDE_SKIP_POSTINSTALL_LINK;
@@ -335,9 +303,9 @@ function idePackagePath(dep) {
 /**
  * Create direct symlinks from the IDE's node_modules to the local Theia
  * packages. Symlinks point explicitly at the requested --theia-path, so the
- * build always resolves against that checkout. This avoids yarn's global link
- * registry, which is keyed by package name and silently keeps pointing at a
- * previously linked path (e.g. the submodule) instead of a worktree.
+ * build always resolves against that checkout. This avoids pnpm/yarn global
+ * link registries, which are keyed by package name and silently keep pointing
+ * at a previously linked path (e.g. the submodule) instead of a worktree.
  */
 function linkTheiaPackages() {
     console.log(`\n${'='.repeat(60)}`);
@@ -389,10 +357,10 @@ function linkTheiaPackages() {
  * Remove any @theia/* entries in the IDE's node_modules that are symlinks
  * created by a previous linkTheiaPackages run. Returns the number removed.
  *
- * This must happen before `yarn install`: yarn trips over a symlinked package
- * (it tries to create a nested node_modules inside it and fails with EEXIST
- * because the link target already has one) and cannot cleanly replace it with
- * the registry version.
+ * This must happen before `pnpm install`: package managers trip over a
+ * symlinked package (they try to create a nested node_modules inside it and
+ * fail with EEXIST because the link target already has one) and cannot cleanly
+ * replace it with the registry version.
  */
 function removeTheiaSymlinks() {
     const requiredDeps = collectAllTheiaDependencies();
@@ -434,7 +402,7 @@ function unlinkTheiaPackages() {
 
     // Reinstall to restore npm versions. Unpublished local packages still need
     // temporary file: resolutions, otherwise this reinstall fails the same way.
-    runYarnInstall(undefined, 'Reinstall dependencies');
+    runPnpmInstall('Reinstall dependencies');
 
     console.log('\nLinks removed and npm dependencies restored');
 }
@@ -460,9 +428,9 @@ function applicationBuildCommand() {
  */
 function applicationPackageCommand() {
     const commands = {
-        stable: 'yarn package:applications',
-        next: 'yarn package:applications:next',
-        all: 'yarn package:applications && yarn package:applications:next'
+        stable: 'pnpm package:applications',
+        next: 'pnpm package:applications:next',
+        all: 'pnpm package:applications && pnpm package:applications:next'
     };
     return commands[options.apps];
 }
@@ -522,7 +490,7 @@ function checkVersionAlignment() {
         console.log(`  Theia checkout @theia/core: ${coreVersion} (stable line ${coreBase}, next line ${coreNextBase}-next.*)`);
         console.log(`  IDE requires:               ${requiredVersion}`);
         console.log('  Building across these versions is likely to fail or break at runtime.');
-        console.log('  Align them, e.g. git -C theia checkout <commit matching the IDE deps>, or run yarn update:theia.\n');
+        console.log('  Align them, e.g. git -C theia checkout <commit matching the IDE deps>, or run pnpm update:theia.\n');
     }
 }
 
@@ -530,12 +498,12 @@ function checkVersionAlignment() {
  * Build IDE
  */
 function buildIde() {
-    // Remove symlinks left by a previous run first: yarn install fails on a
+    // Remove symlinks left by a previous run first: pnpm install fails on a
     // symlinked @theia package (EEXIST creating its nested node_modules).
     removeTheiaSymlinks();
-    // Install: yarn install replaces node_modules/@theia/* with the registry
+    // Install: pnpm install replaces node_modules/@theia/* with the registry
     // versions, so the local packages must be linked afterwards.
-    runYarnInstall('yarn', 'Install IDE dependencies');
+    runPnpmInstall('Install IDE dependencies');
     linkTheiaPackages();
     // sync must run after install+link so the missing transitives are present
     // in theia-ide/node_modules to copy from
@@ -543,7 +511,7 @@ function buildIde() {
     run('pnpm build:extensions', ROOT_DIR, 'Build IDE extensions');
     run(applicationBuildCommand(), ROOT_DIR, `Build IDE applications (${options.apps}, ${options.prod ? 'prod' : 'dev'})`);
     if (!options.skipPlugins) {
-        run('yarn download:plugins', ROOT_DIR, 'Download plugins');
+        run('pnpm download:plugins', ROOT_DIR, 'Download plugins');
     } else {
         console.log('\nSkipping plugin download (--skip-plugins)');
     }
@@ -598,7 +566,7 @@ function listPackageDirs(nodeModulesDir) {
  * sometimes nests a dependency (e.g. tar-stream@3 in filesystem/node_modules)
  * whose own deps (e.g. b4a) are not hoisted anywhere reachable from there.
  * Scans the real package files rather than `npm list`, which does not descend
- * into yarn-linked packages.
+ * into symlinked packages.
  */
 function detectMissingTransitives() {
     const theiaPackages = findTheiaPackages(options.theiaPath);
@@ -697,8 +665,8 @@ function syncMissingFrameworkDeps() {
  *
  * Re-running install.js fixes this: it is a no-op when dist/ already exists and
  * otherwise extracts from the local Electron cache (no network download in the
- * common case). A plain `yarn && build && package` never hits this because that
- * single fresh install runs the postinstall cleanly.
+ * common case). A plain `pnpm install && build && package` never hits this
+ * because that single fresh install runs the postinstall cleanly.
  */
 function ensureElectronDist() {
     const electronDir = path.join(ROOT_DIR, 'node_modules', 'electron');
@@ -738,8 +706,8 @@ async function main() {
     if (options.unlink) {
         unlinkTheiaPackages();
     } else if (options.postinstall) {
-        // Postinstall mode: any `yarn install` must leave node_modules pointing
-        // at the local framework, so that every build entry point (yarn browser
+        // Postinstall mode: any `pnpm install` must leave node_modules pointing
+        // at the local framework, so that every build entry point (pnpm browser
         // build, lerna scripts, theia build, ...) produces a bundle containing
         // the submodule's code instead of silently using the npm versions.
         if (process.env.THEIA_IDE_SKIP_POSTINSTALL_LINK === '1') {
@@ -764,7 +732,7 @@ async function main() {
         } else {
             buildTheia();
         }
-        // Workspaces in the root package.json make yarn resolve @theia/* from
+        // The pnpm workspace makes pnpm resolve @theia/* ("workspace:*") from
         // the local checkout. Verify that and fail loudly: an install that
         // silently fell back to the npm registry would produce wrong builds.
         verifyTheiaResolution();

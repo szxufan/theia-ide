@@ -248,6 +248,9 @@ importers:
       '@theia/task':
         specifier: workspace:*
         version: link:../../theia/packages/task
+      '@theia/telemetry':
+        specifier: workspace:*
+        version: link:../../theia/packages/telemetry
       '@theia/terminal':
         specifier: workspace:*
         version: link:../../theia/packages/terminal
@@ -495,6 +498,9 @@ importers:
       '@theia/task':
         specifier: workspace:*
         version: link:../../theia/packages/task
+      '@theia/telemetry':
+        specifier: workspace:*
+        version: link:../../theia/packages/telemetry
       '@theia/terminal':
         specifier: workspace:*
         version: link:../../theia/packages/terminal

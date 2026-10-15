@@ -1,13 +1,13 @@
 # Integration build against Theia@next
 
-The master branch has a script that may be used to update all theia versions to `next`. This may be executed running `yarn update:next` in the repository root.
+The master branch has a script that may be used to update all theia versions to `next`. This may be executed running `pnpm update:next` in the repository root.
 We will set up an integration job that will build the Eclipse Theia IDE against Theia@next so that we may identify breaking changes early.
 
 ## Build process
 
 * Check out the master branch containing all of the latest changes.
 * Merge the next branch into the checked out branch. The next branch will only contain fixes that are required to build against the `next` version (e.g. a method was renamed and causes compile errors)
-* Run `yarn update:next` (may have been exectued on `next` already but not necessarily)
+* Run `pnpm update:next` (may have been exectued on `next` already but not necessarily)
 * Build the IDE and run the tests
 * In case of an error notify responsible persons via e-mail
 

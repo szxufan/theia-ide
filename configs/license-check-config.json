@@ -1,6 +1,6 @@
 {
     "project": "ecd.theia",
-    "inputFile": "yarn.lock",
+    "inputFile": "pnpm-lock.yaml",
     "batch": 50,
     "timeout": 240,
     "summary": "license-check-summary.txt"

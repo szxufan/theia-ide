@@ -106,6 +106,7 @@
     "@theia/search-in-workspace": "workspace:*",
     "@theia/secondary-window": "workspace:*",
     "@theia/task": "workspace:*",
+    "@theia/telemetry": "workspace:*",
     "@theia/terminal": "workspace:*",
     "@theia/terminal-manager": "workspace:*",
     "@theia/test": "workspace:*",

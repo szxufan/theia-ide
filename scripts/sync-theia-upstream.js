@@ -77,7 +77,7 @@ function tryRun(cmd, description = '') {
 function main() {
     if (!require('fs').existsSync(path.join(THEIA_DIR, '.git'))) {
         console.error(`Error: theia submodule not found at ${THEIA_DIR}`);
-        console.error('Initialize it first: yarn theia:init');
+        console.error('Initialize it first: pnpm theia:init');
         process.exit(1);
     }
 

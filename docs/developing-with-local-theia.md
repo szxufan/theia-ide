@@ -10,19 +10,19 @@ This guide explains how to build and test the Theia IDE against the
 The framework lives in the `theia` submodule, a fork of
 [eclipse-theia/theia](https://github.com/eclipse-theia/theia) at
 `https://github.com/szxufan/theia.git`. **Building from the submodule is the
-default**: `yarn build`, `yarn build:dev`, `yarn build:next` and
-`yarn build:next:dev` all compile the submodule first and link its packages
+default**: `pnpm build`, `pnpm build:dev`, `pnpm build:next` and
+`pnpm build:next:dev` all compile the submodule first and link its packages
 into the IDE build.
 
 ## Prerequisites
 
-- Node.js and npm installed (see [Theia prerequisites](https://github.com/eclipse-theia/theia/blob/master/doc/Developing.md#prerequisites))
+- Node.js and pnpm installed (see [Theia prerequisites](https://github.com/eclipse-theia/theia/blob/master/doc/Developing.md#prerequisites))
 
 After cloning this repository, initialize the submodule (the build scripts
 also do this automatically when it is missing):
 
 ```sh
-git submodule update --init theia   # or: yarn theia:init
+git submodule update --init theia   # or: pnpm theia:init
 ```
 
 ## Submodule Pinning and Versions
@@ -50,8 +50,8 @@ If the commit or tag you want to pin is missing from the fork
 (`szxufan/theia`), sync it from upstream:
 
 ```sh
-yarn theia:sync             # fetch upstream master + tags into ./theia
-yarn theia:sync --push      # also fast-forward the fork and push missing tags
+pnpm theia:sync             # fetch upstream master + tags into ./theia
+pnpm theia:sync --push      # also fast-forward the fork and push missing tags
 ```
 
 You need push access to the fork for `--push`. On networks where GitHub is
@@ -64,8 +64,33 @@ git config --global url."git@github.com:".insteadOf "https://github.com/"
 To move the submodule to the fork's latest master:
 
 ```sh
-yarn theia:update           # git submodule update --remote theia
+pnpm theia:update           # git submodule update --remote theia
 ```
+
+## Fork Customizations in the Submodule
+
+The fork carries a few commits on top of upstream that change runtime
+behavior. Keep them in mind when syncing with upstream or debugging startup
+issues:
+
+- **Automatic Chinese locale** (`packages/core/src/browser/preload/i18n-preload-contribution.ts`):
+  when no locale is persisted and no `defaultLocale` is configured, the
+  frontend follows the system language and selects `zh-cn`/`zh-tw` for Chinese
+  systems.
+- **Startup resilience for localization** (same file, plus
+  `packages/plugin-ext/src/hosted/node/hosted-plugin-localization-service.ts`):
+  - The frontend waits at most 10 s (`localizationLoadTimeout`) for
+    localization data from the backend and otherwise falls back to the default
+    locale, so a misbehaving backend can no longer block the preload phase
+    forever (blank window).
+  - The backend guarantees that `HostedPluginLocalizationService.ready`
+    resolves even when the shared localization cache
+    (`<config dir>/localization-cache`) cannot be cleaned — e.g. locked by
+    another running instance (EPERM on Windows). In that case it falls back to
+    a process-local cache directory under the OS temp dir.
+
+  Regression tests live next to the changed sources
+  (`i18n-preload-contribution.spec.ts`, `hosted-plugin-localization-service.spec.ts`).
 
 ## Important Note
 
@@ -73,37 +98,37 @@ The build does not update the IDE version or Theia package versions in
 `package.json` files. It uses the current state of both repositories and
 symlinks the submodule's `@theia/*` packages into the IDE's `node_modules`
 to override the dependencies. If needed, run versioning commands
-(e.g., `yarn update:theia <version>`) separately before building.
+(e.g., `pnpm update:theia <version>`) separately before building.
 
 ## Quick Start
 
 ```sh
 git submodule update --init theia   # only needed on a fresh clone
-yarn build:dev                      # build framework + stable apps (dev mode)
+pnpm build:dev                      # build framework + stable apps (dev mode)
 ```
 
-`yarn build`, `yarn build:dev`, `yarn build:next` and `yarn build:next:dev`
+`pnpm build`, `pnpm build:dev`, `pnpm build:next` and `pnpm build:next:dev`
 all delegate to `scripts/build-with-local-theia.js`:
 
 | Script              | What it builds (from the submodule)              |
 |---------------------|---------------------------------------------------|
-| `yarn build`        | framework + `browser` + `electron` (prod)         |
-| `yarn build:dev`    | framework + `browser` + `electron` (dev)          |
-| `yarn build:next`   | framework + `electron-next` (prod)                |
-| `yarn build:next:dev` | framework + `electron-next` (dev)               |
+| `pnpm build`        | framework + `browser` + `electron` (prod)         |
+| `pnpm build:dev`    | framework + `browser` + `electron` (dev)          |
+| `pnpm build:next`   | framework + `electron-next` (prod)                |
+| `pnpm build:next:dev` | framework + `electron-next` (dev)               |
 
 To build against the npm-published `@theia/*` packages instead of the
 submodule (e.g., when tracking a newly published `next` version), use:
 
 ```sh
-yarn build:npm        # old default: build:extensions + build:applications
-yarn build:npm:dev
+pnpm build:npm        # old default: build:extensions + build:applications
+pnpm build:npm:dev
 ```
 
 The generic entry point with all options is:
 
 ```sh
-yarn build:local-theia [-- options]
+pnpm build:local-theia [-- options]
 node scripts/build-with-local-theia.js [options]
 ```
 
@@ -112,7 +137,7 @@ node scripts/build-with-local-theia.js [options]
 1. Initialize the `theia` submodule if it is missing
 2. Warn when the framework checkout does not match the IDE's dependency line
 3. Build the framework (`npm ci` + `npm run compile` inside `theia/`)
-4. Install the IDE dependencies (`yarn`)
+4. Install the IDE dependencies (`pnpm install`)
 5. Symlink all `@theia/*` packages from the submodule into the IDE's `node_modules`
 6. Copy any transitive dependencies that the linked packages need but cannot resolve from the checkout (see [Why some dependencies are copied](#why-some-dependencies-are-copied))
 7. Build the Theia IDE extensions and the selected applications (`--apps stable` by default)
@@ -127,10 +152,10 @@ be used via `--theia-path`.
 ### Full Build
 
 ```sh
-yarn build:local-theia                     # stable apps, dev mode
-yarn build:local-theia --prod              # stable apps, prod mode
-yarn build:local-theia --apps next         # electron-next, dev mode
-yarn build:local-theia --apps all --prod   # everything, prod mode
+pnpm build:local-theia                     # stable apps, dev mode
+pnpm build:local-theia --prod              # stable apps, prod mode
+pnpm build:local-theia --apps next         # electron-next, dev mode
+pnpm build:local-theia --apps all --prod   # everything, prod mode
 ```
 
 ### Using a Different Theia Location
@@ -139,7 +164,7 @@ Theia can live anywhere; pass its path with `--theia-path`. This also works with
 git worktrees, since the packages are symlinked at the exact path you provide:
 
 ```sh
-yarn build:local-theia --theia-path /path/to/theia
+pnpm build:local-theia --theia-path /path/to/theia
 ```
 
 ### Incremental Development
@@ -148,11 +173,11 @@ After the initial build, you can iterate faster:
 
 ```sh
 # Rebuild only Theia IDE (framework unchanged)
-yarn build:local-theia --skip-theia-build
+pnpm build:local-theia --skip-theia-build
 
 # Rebuild only Theia packages, then rebuild the IDE apps
 cd theia && npm run compile
-cd .. && yarn build:local-theia --skip-theia-build --skip-plugins
+cd .. && pnpm build:local-theia --skip-theia-build --skip-plugins
 ```
 
 ### Build and Package
@@ -160,8 +185,8 @@ cd .. && yarn build:local-theia --skip-theia-build --skip-plugins
 To create a distributable application:
 
 ```sh
-yarn build:local-theia --package                     # packages the stable apps
-yarn build:local-theia --apps next --package         # packages electron-next
+pnpm build:local-theia --prod --package            # packages the stable apps
+pnpm build:local-theia --apps next --package       # packages electron-next
 ```
 
 The packaged applications will be in `applications/*/dist/`.
@@ -171,7 +196,7 @@ The packaged applications will be in `applications/*/dist/`.
 If you want to manage builds manually:
 
 ```sh
-yarn build:local-theia --skip-theia-build --skip-ide-build
+pnpm build:local-theia --skip-theia-build --skip-ide-build
 ```
 
 ### Skip Plugin Download
@@ -179,7 +204,7 @@ yarn build:local-theia --skip-theia-build --skip-ide-build
 If you already have plugins or want to skip downloading them:
 
 ```sh
-yarn build:local-theia --skip-plugins
+pnpm build:local-theia --skip-plugins
 ```
 
 ### Restore Normal Dependencies
@@ -187,7 +212,7 @@ yarn build:local-theia --skip-plugins
 When you're done testing with the submodule-linked framework:
 
 ```sh
-yarn build:local-theia --unlink
+pnpm build:local-theia --unlink
 ```
 
 This removes the `@theia/*` symlinks and reinstalls packages from npm.
@@ -197,7 +222,7 @@ This removes the `@theia/*` symlinks and reinstalls packages from npm.
 Preview what commands will be executed:
 
 ```sh
-yarn build:local-theia --dry-run
+pnpm build:local-theia --dry-run
 ```
 
 ## Running the Theia IDE
@@ -205,9 +230,9 @@ yarn build:local-theia --dry-run
 After building:
 
 ```sh
-yarn --cwd applications/browser start       # stable browser app
-yarn --cwd applications/electron start      # stable electron app
-yarn --cwd applications/electron-next start # next electron app
+pnpm browser start                            # stable browser app
+pnpm electron start                           # stable electron app
+pnpm --dir applications/electron-next start   # next electron app
 ```
 
 If you packaged the application with `--package`, you can also run the
@@ -221,7 +246,7 @@ A typical development workflow looks like:
 
     ```sh
     git submodule update --init theia
-    yarn build:dev
+    pnpm build:dev
     ```
 
 2. **Make changes in Theia**: Edit files in `theia/`
@@ -236,8 +261,8 @@ A typical development workflow looks like:
 
     ```sh
     cd ..
-    yarn build:local-theia --skip-theia-build --skip-plugins
-    yarn --cwd applications/browser start
+    pnpm build:local-theia --skip-theia-build --skip-plugins
+    pnpm browser start
     ```
 
 5. **Commit framework changes**: Work on a branch inside `theia/`, push it to
@@ -293,13 +318,13 @@ dependency name and runs during both the build and the packaging step.
 Initialize the submodule:
 
 ```sh
-git submodule update --init theia   # or: yarn theia:init
+git submodule update --init theia   # or: pnpm theia:init
 ```
 
 Or specify a custom checkout path:
 
 ```sh
-yarn build:local-theia --theia-path /correct/path/to/theia
+pnpm build:local-theia --theia-path /correct/path/to/theia
 ```
 
 ### "Package not found in local Theia"
@@ -324,7 +349,7 @@ git -C theia checkout <that commit>
 git add theia
 ```
 
-or update the IDE's dependency versions (`yarn update:theia <version>`) to
+or update the IDE's dependency versions (`pnpm update:theia <version>`) to
 match a newer framework checkout.
 
 ### Build Errors After Switching Branches
@@ -334,11 +359,11 @@ If you switch branches or commits in either repository, clean and rebuild:
 ```sh
 # In theia-ide
 git clean -xfd
-yarn build:dev
+pnpm build:dev
 
 # Or if only Theia packages changed
 cd theia && git clean -xfd && npm ci && npm run compile
-cd .. && yarn build:local-theia --skip-theia-build --skip-plugins
+cd .. && pnpm build:local-theia --skip-theia-build --skip-plugins
 ```
 
 ### Restoring Clean State
@@ -347,9 +372,9 @@ If things get into a bad state:
 
 ```sh
 # Unlink and restore npm packages
-yarn build:local-theia --unlink
+pnpm build:local-theia --unlink
 
 # Full clean rebuild
 git clean -xfd
-yarn && yarn build:npm:dev && yarn download:plugins
+pnpm install && pnpm build:npm:dev && pnpm download:plugins
 ```

@@ -61,7 +61,7 @@ When using this path, see the adjusted instructions in [2.5 Mac Artifacts](#25-m
 <!-- release: both -->
 
 ```sh
-yarn
+pnpm install
 ```
 
 ### 2.2. Update versions
@@ -70,10 +70,10 @@ yarn
 Determine **THEIA_IDE_VERSION** as described in [1. Overview](#1-overview), then run the release preparation script with both versions:
 
 ```sh
-yarn release:prepare --theia {{version}} --ide {{ideVersion}}
+pnpm release:prepare --theia {{version}} --ide {{ideVersion}}
 ```
 
-It updates the monorepo version, all package versions, the Theia dependencies, the versioned `@theia` patch file names and the yarn lock file. It never derives a version, both are taken exactly as passed.
+It updates the monorepo version, all package versions, the Theia dependencies, the versioned `@theia` patch file names and the pnpm lock file. It never derives a version, both are taken exactly as passed.
 
 - Omit `--theia` if there is no new Theia release to consume, `--ide` is always required.
 - Add `--dry-run` to print the versions and the commands without running them.
@@ -85,25 +85,25 @@ Optional: the manual steps would be:
 1. Update the monorepo version to **THEIA_IDE_VERSION** (without creating a Git tag):
 
    ```sh
-   yarn version --no-git-tag-version --new-version {{ideVersion}}
+   pnpm version {{ideVersion}} --no-git-tag-version
    ```
 
 2. Optional: If there is a new Theia release to consume, update Theia dependencies to **THEIA_VERSION** :
 
    ```sh
-   yarn update:theia {{version}} && yarn update:theia:children {{version}}
+   pnpm update:theia {{version}} && pnpm update:theia:children {{version}}
    ```
 
 3. Update all package versions to **THEIA_IDE_VERSION** (select in input prompt):
 
    ```sh
-   yarn lerna version --exact --no-push --no-git-tag-version
+   pnpm lerna version --exact --no-push --no-git-tag-version
    ```
 
-4. Update the yarn lock file:
+4. Update the pnpm lock file:
 
    ```sh
-   yarn
+   pnpm install
    ```
 
 ### 2.3. Check for mandatory code changes
@@ -424,11 +424,11 @@ After the IDE is promoted to stable, perform these steps for the snap update:
 
 After each release, run the following command to upgrade dependencies:
 
-Keep this upgrade process in a separate PR, as it might require IP Reviews from the Eclipse Foundation and additional time. Also, verify the `electron` version in `yarn.lock` and adjust `electronVersion` in `applications/electron/electron-builder.yml` if it has changed.
+Keep this upgrade process in a separate PR, as it might require IP Reviews from the Eclipse Foundation and additional time. Also, verify the `electron` version in `pnpm-lock.yaml` and adjust `electronVersion` in `applications/electron/electron-builder.yml` if it has changed.
 
 To perform the upgrade:
 
-- Run `yarn upgrade` at the root of the repository.
+- Run `pnpm update -r` at the root of the repository.
 - Fix any compilation errors, typing errors, and failing tests.
 - Open a PR with the changes ([example](https://github.com/eclipse-theia/theia-ide/pull/568)).
 - The license check review is done via the CI.

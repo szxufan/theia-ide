@@ -35,7 +35,7 @@ asarUnpack:
 
 #### 2. patch-package
 
-When upstream code in `node_modules` needs modification, for example to adjust paths, [patch-package](https://github.com/ds300/patch-package) can apply source level patches after `yarn install`.
+When upstream code in `node_modules` needs modification, for example to adjust paths, [patch-package](https://github.com/ds300/patch-package) can apply source level patches after `pnpm install`.
 
 * Patches live in a `patches` directory (by default at the repository root)
 * Patches are applied automatically via the `postinstall` script in `package.json`

@@ -73,14 +73,14 @@ NOTE: If manually building after updating dependencies or pulling to a newer com
 ```sh
 # Build "dev" version of the app. It's quicker, uses less resources,
 # but the front end app is not "minified"
-yarn && yarn build:dev && yarn download:plugins
+pnpm install && pnpm build:dev && pnpm download:plugins
 ```
 
 Production applications:
 
 ```sh
 # Build production version of the Eclipse Theia IDE app
-yarn && yarn build && yarn download:plugins
+pnpm install && pnpm build && pnpm download:plugins
 ```
 
 ### Package the Applications
@@ -90,9 +90,9 @@ Currently we only produce packages for the Electron application.
 _If you are trying to compile for ARM on an ARM machine, you may want to follow [these steps](https://github.com/eclipse-theia/theia-ide/issues/690#issuecomment-4157768849) beforehand._
 
 ```sh
-yarn package:applications
+pnpm package:applications
 # or
-yarn electron package
+pnpm electron package
 ```
 
 The packaged application is located in `applications/electron/dist`.
@@ -100,7 +100,7 @@ The packaged application is located in `applications/electron/dist`.
 ### Create a Preview Electron Application (without packaging it)
 
 ```sh
-yarn electron package:preview
+pnpm electron package:preview
 ```
 
 The packaged application is located in `applications/electron/dist`.
@@ -110,8 +110,8 @@ The packaged application is located in `applications/electron/dist`.
 The E2E tests are basic UI tests of the actual application, run against the preview of the packaged application.
 
 ```sh
-yarn electron package:preview
-yarn electron test
+pnpm electron package:preview
+pnpm electron test
 ```
 
 ### Running Browser app
@@ -119,7 +119,7 @@ yarn electron test
 The browser app may be started with
 
 ```sh
-yarn browser start
+pnpm browser start
 ```
 
 Then connect to <http://localhost:3000/>.

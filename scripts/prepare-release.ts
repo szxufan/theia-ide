@@ -57,20 +57,20 @@ function execute(): void {
         console.log('');
 
         // 2.1 Install build dependencies
-        run('yarn');
+        run('pnpm install');
 
         // 2.2 Update versions
         if (ideVersion !== currentVersion) {
-            run(`yarn version --no-git-tag-version --new-version ${ideVersion}`);
+            run(`pnpm version ${ideVersion} --no-git-tag-version`);
         } else {
             console.log(`Skipping the monorepo version update, package.json is already at ${ideVersion}.`);
         }
         if (theiaVersion) {
-            run(`yarn update:theia ${theiaVersion}`);
-            run(`yarn update:theia:children ${theiaVersion}`);
+            run(`pnpm update:theia ${theiaVersion}`);
+            run(`pnpm update:theia:children ${theiaVersion}`);
         }
-        run(`yarn lerna version ${ideVersion} --exact --no-push --no-git-tag-version --yes`);
-        run('yarn');
+        run(`pnpm lerna version ${ideVersion} --exact --no-push --no-git-tag-version --yes`);
+        run('pnpm install');
     } catch (error) {
         console.error(`Failed to prepare the release: ${error.message}`);
         process.exit(1);

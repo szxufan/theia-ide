@@ -71,7 +71,10 @@ nsis:
   uninstallerIcon: resources/icons/WindowsLauncherIcons/TheiaIDE.ico
   installerSidebar: resources/icons/InstallerSidebarImage/164-314Windows.bmp
   uninstallerSidebar: resources/icons/InstallerSidebarImage/164-314Windows.bmp
-  allowToChangeInstallationDirectory: true
+  # Do not allow changing the installation directory on upgrade: electron-builder
+  # disables the keepShortcuts mechanism when this is enabled, which makes the
+  # old uninstaller remove the AppUserModelID and the taskbar pin disappears.
+  allowToChangeInstallationDirectory: false
   runAfterFinish: false
   artifactName: ${productName}Setup.${ext}
   license: LICENSE
