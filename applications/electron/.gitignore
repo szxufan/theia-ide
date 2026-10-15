@@ -1,0 +1,3 @@
+
+# electron-builder staging dir (see scripts/stage-app.cjs)
+.stage/
