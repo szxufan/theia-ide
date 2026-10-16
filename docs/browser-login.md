@@ -51,9 +51,14 @@ Docker（`browser.Dockerfile` 镜像）：
 docker run -d -p 3000:3000 \
   -e THEIA_AUTH_USER=admin \
   -e THEIA_AUTH_PASSWORD_HASH=<64位hash> \
-  -v /path/to/workspace:/home/project \
+  -v theia-data:/home/theia/data \
+  -v theia-workspace:/home/project \
   theia-ide-browser
 ```
+
+- `/home/project`：默认工作区（用户代码数据）
+- `/home/theia/data`：用户主目录（`.theia` 配置/扩展、`.m2`/`.gradle` 缓存等），应用安装目录与用户数据已分离，挂这一个卷即可持久化全部用户数据
+- 镜像内置 HEALTHCHECK（`GET /` 跟随重定向），登录启用后未认证探测返回 302 → 200，状态正常
 
 ## 行为说明
 

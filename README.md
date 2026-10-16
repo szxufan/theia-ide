@@ -159,3 +159,19 @@ docker run -p=3000:3000 --rm theia-ide
 ```
 
 然后连接到 <http://localhost:3000/>。
+
+生产部署建议：
+
+```sh
+docker run -d -p=3000:3000 \
+  -v theia-data:/home/theia/data \
+  -v theia-workspace:/home/project \
+  -e THEIA_AUTH_USER=admin \
+  -e THEIA_AUTH_PASSWORD_HASH=<密码的SHA-256哈希> \
+  theia-ide
+```
+
+- `/home/project`：默认工作区，存放用户代码数据。
+- `/home/theia/data`：用户主目录（应用安装目录与用户数据已分离），持久化用户设置、后装扩展（`.theia`）、Maven/Gradle 缓存（`.m2`/`.gradle`）等，一个卷即可，升级镜像不丢数据。
+- `THEIA_AUTH_USER` / `THEIA_AUTH_PASSWORD_HASH`：可选启用单用户登录，用法见 [docs/browser-login.md](docs/browser-login.md)。公网部署请务必在外层配置 HTTPS 反向代理。
+- 镜像内置 HEALTHCHECK（探测 `GET /`），可用 `docker ps` 查看 `healthy` 状态。

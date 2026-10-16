@@ -25,28 +25,35 @@ RUN npm install -g pnpm@9 && \
 FROM node:24-bookworm-slim AS production-stage
 
 # Create theia user and directories
-# Application will be copied to /home/theia
-# Default workspace is located at /home/project
-RUN adduser --system --group --home /home/theia theia
-RUN chmod g+rw /home && \
-    mkdir -p /home/project && \
-    chown -R theia:theia /home/theia && \
-    chown -R theia:theia /home/project;
+# Application will be copied to /home/theia (read-only app dir)
+# User home is a separate data dir so a single volume persists
+# all user data (.theia config/extensions, .m2, .gradle, dotfiles)
+# without touching the application itself
+RUN adduser --system --group --home /home/theia/data theia \
+ && mkdir -p /home/theia/data /home/project \
+ && chown -R theia:theia /home/theia/data /home/project \
+ && chmod g+rw /home
 
 # Install required tools for application: Temurin JDK, JDK, SSH, Bash, Maven
 # Node is already available in base image
-RUN apt-get update && apt-get install -y wget apt-transport-https && \
+RUN apt-get update && apt-get install -y wget apt-transport-https curl && \
     apt-get update && apt-get install -y git openssh-client openssh-server bash libsecret-1-0 openjdk-17-jdk maven && \
     apt-get purge -y wget && \
     apt-get clean
 
-ENV HOME=/home/theia
+ENV HOME=/home/theia/data
 WORKDIR /home/theia
 
 # Copy application from builder-stage
 COPY --from=build-stage --chown=theia:theia /home/theia /home/theia
 
 EXPOSE 3000
+
+# Health check: probe the HTTP endpoint following redirects
+# (when single-user login is enabled, GET / redirects to /login.html).
+# start-period covers the backend startup (plugin deployment).
+HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3 \
+  CMD curl -fL http://localhost:3000/ || exit 1
 
 # Specify default shell for Theia and the Built-In plugins directory
 ENV SHELL=/bin/bash \
