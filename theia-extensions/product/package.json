@@ -9,9 +9,16 @@
     "@theia/getting-started": "workspace:*",
     "@theia/vsx-registry": "workspace:*",
     "@theia/workspace": "workspace:*",
+    "cookie": "^1.1.1",
+    "express": "^4.22.3",
     "inversify": "^6.2.2"
   },
   "devDependencies": {
+    "@types/chai": "^4.3.0",
+    "@types/express": "^4.17.25",
+    "@types/mocha": "^10.0.10",
+    "chai": "^4.3.10",
+    "mocha": "^11.8.0",
     "rimraf": "^2.7.1",
     "tslint": "^5.20.1",
     "typescript": "~5.9.3"
@@ -19,6 +26,7 @@
   "theiaExtensions": [
     {
       "frontend": "lib/browser/theia-ide-frontend-module",
+      "backend": "lib/node/theia-ide-backend-module",
       "electronMain": "lib/electron-main/theia-ide-main-module"
     }
   ],
@@ -41,6 +49,7 @@
   "scripts": {
     "clean": "rimraf lib *.tsbuildinfo",
     "build": "tsc -b",
+    "test": "mocha \"lib/node/**/*.spec.js\"",
     "lint": "eslint --ext js,jsx,ts,tsx src",
     "lint:fix": "eslint --ext js,jsx,ts,tsx src --fix",
     "update:theia": "ts-node ../../scripts/update-theia-version.ts",

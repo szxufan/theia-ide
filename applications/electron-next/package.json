@@ -23,6 +23,7 @@
     "frontend": {
       "config": {
         "applicationName": "Theia IDE Next",
+        "defaultLocale": "zh-cn",
         "brandingVariant": "next",
         "availableUpdateChannels": [
           "next"

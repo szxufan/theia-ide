@@ -96,7 +96,7 @@ export class TheiaIDEGettingStartedWidget extends GettingStartedWidget {
      */
     protected renderVersion(): React.ReactNode {
         return <p className='gs-sub-header'>
-            {'Version ' + (this.applicationInfo?.version ?? '-') + ' · VS Code API ' + (this.vscodeApiVersion ?? '-')}
+            {'版本 ' + (this.applicationInfo?.version ?? '-') + ' · VS Code API ' + (this.vscodeApiVersion ?? '-')}
         </p>;
     }
 }

@@ -28,17 +28,17 @@ import { URI as VSCodeURI } from 'vscode-uri';
 
 export namespace TheiaUpdaterCommands {
 
-    const category = 'Theia Electron Updater';
+    const category = 'Theia 更新器';
 
     export const CHECK_FOR_UPDATES: Command = {
         id: 'electron-theia:check-for-updates',
-        label: 'Check for Updates...',
+        label: '检查更新...',
         category
     };
 
     export const RESTART_TO_UPDATE: Command = {
         id: 'electron-theia:restart-to-update',
-        label: 'Restart to Update',
+        label: '重启以更新',
         category
     };
 
@@ -203,29 +203,29 @@ export class TheiaUpdaterFrontendContribution implements CommandContribution, Me
 
     protected async handleDownloadUpdate(updateInfo?: UpdateInfo): Promise<void> {
         const message = updateInfo
-            ? `Update to version ${updateInfo.version} found, do you want to update?`
-            : 'Updates found, do you want to update?';
-        const actions = ['Not now', 'Yes'];
+            ? `发现新版本 ${updateInfo.version}，是否更新？`
+            : '发现可用更新，是否更新？';
+        const actions = ['暂不', '是'];
         const checkForUpdates = this.preferenceService.get<boolean>('updates.checkForUpdates', true);
         if (checkForUpdates) {
-            actions.push('Never');
+            actions.push('不再检查');
         }
         const answer = await this.messageService.info(message, ...actions);
-        if (answer === 'Never') {
+        if (answer === '不再检查') {
             this.preferenceService.set('updates.checkForUpdates', false, PreferenceScope.User);
             return;
         }
-        if (answer === 'Yes') {
+        if (answer === '是') {
             this.stopProgress();
             this.progress = await this.messageService.showProgress({
-                text: 'Theia IDE Update',
+                text: 'Theia IDE 更新',
                 options: { cancelable: true }
             }, () => this.updater.cancel());
             let dots = 0;
             this.intervalId = setInterval(() => {
                 if (this.progress !== undefined) {
                     dots = (dots + 1) % 4;
-                    this.progress.report({ message: 'Downloading' + '.'.repeat(dots) });
+                    this.progress.report({ message: '正在下载' + '…'.repeat(dots) });
                 }
             }, 1000);
             this.updater.downloadUpdate();
@@ -233,7 +233,7 @@ export class TheiaUpdaterFrontendContribution implements CommandContribution, Me
     }
 
     protected async handleNoUpdate(): Promise<void> {
-        this.messageService.info('Already using the latest version');
+        this.messageService.info('已在使用最新版本');
     }
 
     protected async handleUpdatesAvailable(): Promise<void> {
@@ -242,10 +242,10 @@ export class TheiaUpdaterFrontendContribution implements CommandContribution, Me
             this.stopProgress();
         }
         const message = this.currentUpdateInfo
-            ? `An update to version ${this.currentUpdateInfo.version} has been downloaded and will be automatically installed on exit. Do you want to restart now?`
-            : 'An update has been downloaded and will be automatically installed on exit. Do you want to restart now?';
-        const answer = await this.messageService.info(message, 'No', 'Yes');
-        if (answer === 'Yes') {
+            ? `更新版本 ${this.currentUpdateInfo.version} 已下载，将在退出时自动安装。是否立即重启？`
+            : '更新已下载，将在退出时自动安装。是否立即重启？';
+        const answer = await this.messageService.info(message, '否', '是');
+        if (answer === '是') {
             this.updater.onRestartToUpdateRequested();
         }
     }
@@ -253,7 +253,7 @@ export class TheiaUpdaterFrontendContribution implements CommandContribution, Me
     protected async handleError(error: UpdaterError): Promise<void> {
         this.stopProgress();
         if (error.errorLogPath) {
-            const viewLogAction = 'View Error Log';
+            const viewLogAction = '查看错误日志';
             const answer = await this.messageService.error(error.message, viewLogAction);
             if (answer === viewLogAction) {
                 const uri = new URI(VSCodeURI.file(error.errorLogPath));

@@ -47,16 +47,16 @@ export function renderWhatIs(windowService: WindowService): React.ReactNode {
     return <div className='gs-section'>
         <h3 className='gs-section-header'>
             <i className={codicon('info')}></i>
-            What is this?
+            这是什么？
         </h3>
         <div>
-            The Eclipse Theia IDE is a modern and open IDE for cloud and desktop, built on
-            the <BrowserLink text="Theia platform" url="https://theia-ide.org" windowService={windowService} />.
+            Eclipse Theia IDE 是一款面向云端与桌面的现代开放 IDE，构建于
+            <BrowserLink text="Theia 平台" url="https://theia-ide.org" windowService={windowService} /> 之上。
         </div>
         <div>
-            You can get it as a <BrowserLink text="desktop application" url={DOWNLOAD_URL} windowService={windowService} /> or <BrowserLink
-                text="try the latest version online" url="https://try.theia-cloud.io/" windowService={windowService} />. The online version is limited to
-            30 minutes per session and hosted on <BrowserLink text="Theia Cloud" url="https://theia-cloud.io/" windowService={windowService} />.
+            您可以获取 <BrowserLink text="桌面应用程序" url={DOWNLOAD_URL} windowService={windowService} />，也可以 <BrowserLink
+                text="在线试用最新版本" url="https://try.theia-cloud.io/" windowService={windowService} />。在线版本每次会话限
+            30 分钟，托管于 <BrowserLink text="Theia Cloud" url="https://theia-cloud.io/" windowService={windowService} />。
         </div>
     </div>;
 }
@@ -65,17 +65,16 @@ export function renderExtendingCustomizing(windowService: WindowService): React.
     return <div className='gs-section'>
         <h3 className='gs-section-header'>
             <i className={codicon('extensions')}></i>
-            Extending &amp; Customizing
+            扩展与定制
         </h3>
         <div>
-            You can extend the IDE at runtime by installing VS Code extensions from
-            the <BrowserLink text="Open VSX registry" url="https://open-vsx.org/" windowService={windowService} />, an open marketplace. Open the Extensions
-            view to browse them.
+            您可以通过从开放的插件市场 <BrowserLink text="Open VSX registry" url="https://open-vsx.org/" windowService={windowService} /> 安装
+            VS Code 扩展，在运行时扩展 IDE。打开扩展视图即可浏览。
         </div>
         <div>
-            The IDE is built on the flexible Theia platform, so it can also serve as
-            a <span className='gs-text-bold'>template</span> for your own tools and IDEs. See
-            the <BrowserLink text="documentation" url="https://theia-ide.org/docs/composing_applications/" windowService={windowService} /> to get started.
+            本 IDE 构建于灵活的 Theia 平台之上，因此也可作为您自有工具和 IDE 的
+            <span className='gs-text-bold'>模板</span>。请参阅
+            <BrowserLink text="文档" url="https://theia-ide.org/docs/composing_applications/" windowService={windowService} /> 以开始使用。
         </div>
     </div>;
 }
@@ -84,12 +83,12 @@ export function renderCollaboration(windowService: WindowService): React.ReactNo
     return <div className='gs-section'>
         <h3 className='gs-section-header'>
             <i className={codicon('live-share')}></i>
-            Collaboration
+            协作
         </h3>
         <div>
-            Share your workspace with others and work together in real time by clicking <i>Collaborate</i> in the status bar. The feature is powered
-            by <BrowserLink text="Open Collaboration Tools" url="https://www.open-collab.tools/" windowService={windowService} /> and uses their public
-            server infrastructure.
+            点击状态栏中的 <i>协作</i> 即可与他人共享工作区并实时协作。该功能由
+            <BrowserLink text="Open Collaboration Tools" url="https://www.open-collab.tools/" windowService={windowService} /> 提供支持，并使用其公共
+            服务器基础设施。
         </div>
     </div>;
 }
@@ -98,12 +97,11 @@ export function renderSupport(windowService: WindowService): React.ReactNode {
     return <div className='gs-section'>
         <h3 className='gs-section-header'>
             <i className={codicon('organization')}></i>
-            Professional Support
+            专业支持
         </h3>
         <div>
-            Professional support, implementation services, consulting and training for the Theia IDE and for other tools based on Eclipse Theia are available
-            from selected companies. They are listed on
-            the <BrowserLink text="Theia support page" url="https://theia-ide.org/support/" windowService={windowService} />.
+            Theia IDE 及其他基于 Eclipse Theia 的工具的专业支持、实施服务、咨询与培训可由优选公司提供。它们列于
+            <BrowserLink text="Theia 支持页面" url="https://theia-ide.org/support/" windowService={windowService} />。
         </div>
     </div>;
 }
@@ -112,18 +110,17 @@ export function renderCommunity(windowService: WindowService): React.ReactNode {
     return <div className='gs-section'>
         <h3 className='gs-section-header'>
             <i className={codicon('comment-discussion')}></i>
-            Community
+            社区
         </h3>
         <div>
-            The features of the Theia IDE come from Theia and the included extensions, while this project packages them into a product and its installers. So
-            please report a bug in a feature to the <BrowserLink text="Theia project"
-                url="https://github.com/eclipse-theia/theia/issues/new/choose" windowService={windowService} />, and anything wrong with the packaging or the
-            installers to the <BrowserLink text="Theia IDE project" url="https://github.com/eclipse-theia/theia-ide/issues/new/choose"
-                windowService={windowService} />.
+            Theia IDE 的功能来自 Theia 及内置扩展，而本项目将它们打包为产品及其安装程序。因此，请将功能缺陷报告给
+            <BrowserLink text="Theia 项目" url="https://github.com/eclipse-theia/theia/issues/new/choose" windowService={windowService} />，
+            将打包或安装程序的问题报告给
+            <BrowserLink text="Theia IDE 项目" url="https://github.com/eclipse-theia/theia-ide/issues/new/choose" windowService={windowService} />。
         </div>
         <div>
-            The <BrowserLink text="source code" url="https://github.com/eclipse-theia/theia-ide" windowService={windowService} /> of the Theia IDE is available
-            on GitHub.
+            Theia IDE 的 <BrowserLink text="源代码" url="https://github.com/eclipse-theia/theia-ide" windowService={windowService} /> 可在
+            GitHub 上获取。
         </div>
     </div>;
 }
@@ -143,15 +140,14 @@ export function renderUpdates(props: BrandingProps): React.ReactNode {
     return <div className='gs-section'>
         <h3 className='gs-section-header'>
             <i className={codicon('cloud-download')}></i>
-            Updates
+            更新
         </h3>
         <div>
-            You can update the Theia IDE directly in this application from Help {'>'} Check for Updates… It also checks for updates automatically
-            after each launch.
+            您可以在本应用中通过 帮助 {'>'} 检查更新… 直接更新 Theia IDE。它还会在每次启动后自动检查更新。
         </div>
         <div>
-            You can also download the most recent version from
-            the <BrowserLink text="download page" url={DOWNLOAD_URL} windowService={props.windowService} />.
+            您也可以从
+            <BrowserLink text="下载页面" url={DOWNLOAD_URL} windowService={props.windowService} /> 获取最新版本。
         </div>
     </div>;
 }

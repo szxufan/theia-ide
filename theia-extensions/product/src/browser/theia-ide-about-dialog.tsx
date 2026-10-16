@@ -67,11 +67,11 @@ export class TheiaIDEAboutDialog extends AboutDialog {
     protected renderVersion(): React.ReactNode {
         return <div>
             <p className='gs-sub-header' >
-                {this.applicationInfo ? 'Version ' + this.applicationInfo.version : '-'}
+                {this.applicationInfo ? '版本 ' + this.applicationInfo.version : '-'}
             </p>
 
             <p className='gs-sub-header' >
-                {'VS Code API Version: ' + this.vscodeApiVersion}
+                {'VS Code API 版本：' + this.vscodeApiVersion}
             </p>
         </div>;
     }

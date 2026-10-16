@@ -1,22 +1,22 @@
 ---
-name: Bug Report
-about: Create a report to help us improve
+name: 缺陷报告
+about: 提交报告以帮助我们改进
 ---
 
-<!-- Please provide a detailed description of the bug. -->
-### Bug Description:
+<!-- 请详细描述该缺陷。 -->
+### 缺陷描述：
 
-<!-- Please provide clear steps to reproduce the bug. -->
-### Steps to Reproduce:
+<!-- 请提供清晰的重现步骤。 -->
+### 重现步骤：
 
 1.
 2.
 3.
 
-<!-- Please provide any additional information available. -->
-<!-- Additional information can be in the form of logs, screenshots, screencasts. -->
+<!-- 请提供任何可用的附加信息。 -->
+<!-- 附加信息可以是日志、截图、录屏等形式。 -->
 
-### Additional Information
+### 附加信息
 
-- Operating System:
-- Theia Version:
+- 操作系统：
+- Theia 版本：

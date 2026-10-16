@@ -21,12 +21,12 @@ export namespace TheiaIDECommands {
     export const REPORT_ISSUE: Command = {
         id: 'theia-ide:report-issue',
         category: CATEGORY,
-        label: 'Report Issue'
+        label: '报告问题'
     };
     export const DOCUMENTATION: Command = {
         id: 'theia-ide:documentation',
         category: CATEGORY,
-        label: 'Documentation'
+        label: '文档'
     };
 }
 

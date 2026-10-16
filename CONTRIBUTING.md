@@ -1,78 +1,62 @@
-# Contributing to Eclipse Theia
+# 为 Eclipse Theia 做贡献
 
-Theia is a young open-source project with a modular architecture. One of the
-goals is to make sure that we can customize and enhance any Theia application
-through extensions.  So while the main Theia repository contains some common
-functionality for IDE-like applications, like a file system or a navigator
-view, most functionality doesn't necessarily need to be put into the core
-repository but can be developed separately.
+Theia 是一个架构模块化的年轻开源项目。其目标之一是确保我们可以通过扩展来定制和增强任何
+Theia 应用。因此，虽然 Theia 主仓库包含了一些 IDE 类应用的通用功能，例如文件系统或导航器
+视图，但大多数功能并不一定需要放入核心仓库，而是可以单独开发。
 
-## How Can I Contribute?
+## 我可以如何贡献？
 
-In the following some of the typical ways of contribution are described.
+下面介绍了一些典型的贡献方式。
 
-### Asking Questions
+### 提问
 
-It's totally fine to ask questions by opening an issue in the Theia GitHub
-repository. We will close it once it's answered and tag it with the 'question'
-label. Please check if the question has been asked before there or on [Stack
-Overflow](https://stackoverflow.com).
+通过在 Theia GitHub 仓库中提交 issue 来提问完全没有问题。一旦问题得到解答，我们会关闭它
+并打上 'question' 标签。在此之前，请先检查该问题是否已经在那里或 [Stack
+Overflow](https://stackoverflow.com) 上被问过。
 
-### Reporting Bugs
+### 报告缺陷
 
-If you have found a bug, you should first check if it has already been filed
-and maybe even fixed. If you find an existing unresolved issue, please add your
-case. If you could not find an existing bug report, please file a new one. In
-any case, please add all information you can share and that will help to
-reproduce and solve the problem.
+如果你发现了一个缺陷，应首先检查它是否已经被提交，甚至可能已被修复。如果你找到一个尚未解
+决的既有 issue，请补充你的情况。如果没有找到既有的缺陷报告，请提交一份新的。无论如何，请
+提供你能分享的所有信息，以便帮助复现和解决问题。
 
-### Reporting Feature Requests
+### 报告功能请求
 
-You may want to see a feature or have an idea. You can file a request and we
-can discuss it.  If such a feature request already exists, please add a comment
-or some other form of feedback to indicate you are interested too. Also in this
-case any concrete use case scenario is appreciated to understand the motivation
-behind it.
+你可能希望看到某个功能或有了某个想法。你可以提交一个请求，我们可以一起讨论。如果这样的功
+能请求已经存在，请添加评论或其他形式的反馈，表明你也对此感兴趣。同样在这种情况下，任何具
+体的用例场景都有助于理解其背后的动机，我们将不胜感激。
 
-### Pull Requests
+### Pull Request
 
-Before you get started investing significant time in something you want to get
-merged and maintained as part of Theia, you should talk with the team through
-an issue. Simply choose the issue you would want to work on, and tell everyone
-that you are willing to do so and how you would approach it. The team will be
-happy to guide you and give feedback.
+在开始投入大量时间做某个你希望被合并并作为 Theia 一部分长期维护的内容之前，你应该先通过
+issue 与团队沟通。只需选择你想要处理的 issue，并告诉大家你愿意去做以及你打算如何实现。团
+队会很乐意为你提供指导和反馈。
 
-We follow the contributing and reviewing pull request guidelines described
-[here](https://github.com/eclipse-theia/theia/blob/master/doc/pull-requests.md).
+我们遵循[这里](https://github.com/eclipse-theia/theia/blob/master/doc/pull-requests.md)
+描述的贡献与 pull request 审查指南。
 
-## Coding Guidelines
+## 编码规范
 
-We follow the coding guidelines described
-[here](https://github.com/eclipse-theia/theia/wiki/Coding-Guidelines).
+我们遵循[这里](https://github.com/eclipse-theia/theia/wiki/Coding-Guidelines)描述的编码规范。
 
-## Eclipse Contributor Agreement
+## Eclipse 贡献者协议
 
-Before your contribution can be accepted by the project team contributors must
-electronically sign the Eclipse Contributor Agreement (ECA).
+在你的贡献能被项目团队接受之前，贡献者必须以电子方式签署 Eclipse 贡献者协议（ECA）。
 
 * https://www.eclipse.org/legal/ECA.php
 
-Commits that are provided by non-committers must have a Signed-off-by field in
-the footer indicating that the author is aware of the terms by which the
-contribution has been provided to the project. The non-committer must
-additionally have an Eclipse Foundation account and must have a signed Eclipse
-Contributor Agreement (ECA) on file.
+非提交者（non-committer）提供的提交必须在页脚包含 Signed-off-by 字段，以表明作者知晓其向
+本项目提供贡献所依据的条款。非提交者还必须拥有 Eclipse Foundation 账户，并已签署存档
+Eclipse 贡献者协议（ECA）。
 
-For more information, please see the Eclipse Committer Handbook:
+更多信息请参阅 Eclipse Committer Handbook：
 https://www.eclipse.org/projects/handbook/#resources-commit
 
-## Sign your work
+## 为你的工作签名
 
-The sign-off is a simple line at the end of the explanation for the patch. Your
-signature certifies that you wrote the patch or otherwise have the right to
-pass it on as an open-source patch. The rules are pretty simple: if you can
-certify the below (from
-[developercertificate.org](https://developercertificate.org/)):
+签署（sign-off）是补丁说明末尾的简单一行。你的签名证明你编写了该补丁，或以其他方式有权将
+其作为开源补丁传递下去。规则非常简单：如果你能证实以下内容（来自
+[developercertificate.org](https://developercertificate.org/)）：
 
 ```
 Developer Certificate of Origin
@@ -113,11 +97,10 @@ By making a contribution to this project, I certify that:
     this project or the open source license(s) involved.
 ```
 
-Then you just add a line to every git commit message:
+然后在每条 git 提交信息中添加一行：
 
     Signed-off-by: Joe Smith <joe.smith@email.com>
 
-Use your real name (sorry, no pseudonyms or anonymous contributions.)
+请使用你的真实姓名（抱歉，不允许使用化名或匿名贡献。）
 
-If you set your `user.name` and `user.email` git configs, you can sign your
-commit automatically with `git commit -s`.
+如果你设置了 `user.name` 和 `user.email` git 配置，就可以使用 `git commit -s` 自动为提交签名。

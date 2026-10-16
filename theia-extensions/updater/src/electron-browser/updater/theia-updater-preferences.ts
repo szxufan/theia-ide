@@ -25,20 +25,20 @@ export const theiaUpdaterPreferenceSchema: PreferenceSchema = {
     'properties': {
         'updates.checkForUpdates': {
             type: 'boolean',
-            description: 'Automatically check for updates.',
+            description: '自动检查更新。',
             default: true,
             scope: PreferenceScope.User
         },
         'updates.checkInterval': {
             type: 'number',
-            description: 'Interval in minutes between automatic update checks.',
+            description: '自动更新检查的间隔时间（以分钟计）。',
             default: 60,
             scope: PreferenceScope.User
         },
         'updates.channel': {
             type: 'string',
             enum: getAvailableUpdateChannels(),
-            description: 'Channel to use for updates.',
+            description: '更新所使用的通道。',
             default: getAvailableUpdateChannels()[0] ?? '',
             scope: PreferenceScope.User
         },

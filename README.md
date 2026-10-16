@@ -7,8 +7,8 @@
 
 <div id="badges" align="center">
 
-The Eclipse Theia IDE is built with this project.\
-Eclipse Theia IDE also serves as a template for building desktop-based products based on the Eclipse Theia platform.
+Eclipse Theia IDE 由本项目构建。\
+Eclipse Theia IDE 同时也作为一个模板，用于构建基于 Eclipse Theia 平台的桌面产品。
 
 </div>
 
@@ -16,146 +16,146 @@ Eclipse Theia IDE also serves as a template for building desktop-based products 
 [![Build](https://github.com/eclipse-theia/theia-ide/actions/workflows/build.yml/badge.svg?event=schedule)](https://github.com/eclipse-theia/theia-ide/actions/workflows/build.yml?query=event%3Aschedule)
 [![Next Build](https://github.com/eclipse-theia/theia-ide/actions/workflows/build-next-release.yml/badge.svg?branch=master)](https://github.com/eclipse-theia/theia-ide/actions/workflows/build-next-release.yml)
 
-[Main Theia Repository](https://github.com/eclipse-theia/theia)
+[Theia 主仓库](https://github.com/eclipse-theia/theia)
 
-[Visit the Theia website](http://www.theia-ide.org) for more documentation: [Using the Theia IDE](https://theia-ide.org/docs/user_getting_started/), [Packaging Theia as a Desktop Product](https://theia-ide.org/docs/blueprint_documentation/).
+请访问 [Theia 网站](http://www.theia-ide.org)获取更多文档：[使用 Theia IDE](https://theia-ide.org/docs/user_getting_started/)、[将 Theia 打包为桌面产品](https://theia-ide.org/docs/blueprint_documentation/)。
 
-## License
+## 许可证
 
 - [MIT](LICENSE)
 
-## Trademark
+## 商标
 
-"Theia" is a trademark of the Eclipse Foundation
+"Theia" 是 Eclipse Foundation 的商标
 <https://www.eclipse.org/theia>
 
-## What is this?
+## 这是什么？
 
-The Eclipse Theia IDE is a modern and open IDE for cloud and desktop. The Theia IDE is based on the [Theia platform](https://theia-ide.org).
-The Theia IDE is available as a [downloadable desktop application](https://theia-ide.org/#theiaidedownload). You can also try the latest version of the Theia IDE online. The online test version is limited to 30 minutes per session and hosted via Theia.cloud. Finally, we provide an [experimental Docker image](#docker) for hosting the Theia IDE online.
+Eclipse Theia IDE 是一款面向云端和桌面的现代开源 IDE。Theia IDE 基于 [Theia 平台](https://theia-ide.org)。
+Theia IDE 提供[可下载的桌面应用](https://theia-ide.org/#theiaidedownload)。你也可以在线试用最新版本的 Theia IDE。在线测试版本每次会话限时 30 分钟，由 Theia.cloud 托管。最后，我们还提供了一个[实验性 Docker 镜像](#docker)，用于在线托管 Theia IDE。
 
-The Eclipse Theia IDE also serves as a **template** for building desktop-based products based on the Eclipse Theia platform, as well as to showcase Eclipse Theia capabilities. It is made up of a subset of existing Eclipse Theia features and extensions. [Documentation is available](https://theia-ide.org/docs/composing_applications/) to help you customize and build your own Eclipse Theia-based product.
+Eclipse Theia IDE 同时也作为一个**模板**，用于构建基于 Eclipse Theia 平台的桌面产品，并展示 Eclipse Theia 的能力。它由现有 Eclipse Theia 功能与扩展的一个子集组成。[相关文档](https://theia-ide.org/docs/composing_applications/)可以帮助你定制并构建自己的基于 Eclipse Theia 的产品。
 
-## Theia IDE vs Theia Blueprint
+## Theia IDE 与 Theia Blueprint
 
-The Theia IDE has been rebranded from its original name “Theia Blueprint”. You can therefore assume the terms “Theia IDE” and “Theia Blueprint” to be synonymous.
+Theia IDE 已从最初的名称 "Theia Blueprint" 更名而来。因此，你可以认为 "Theia IDE" 与 "Theia Blueprint" 这两个术语是同义词。
 
-## Development
+## 开发
 
-### Requirements
+### 环境要求
 
-Please check Theia's [prerequisites](https://github.com/eclipse-theia/theia/blob/master/doc/Developing.md#prerequisites), and keep node versions aligned between Theia IDE and that of the referenced Theia version.
+请查阅 Theia 的[前置条件](https://github.com/eclipse-theia/theia/blob/master/doc/Developing.md#prerequisites)，并保持 Theia IDE 的 Node 版本与所引用的 Theia 版本一致。
 
-### Documentation
+### 文档
 
-Documentation on how to package Theia as a Desktop Product may be found [here](https://theia-ide.org/docs/blueprint_documentation/).
+关于如何将 Theia 打包为桌面产品的文档可在[这里](https://theia-ide.org/docs/blueprint_documentation/)找到。
 
-For adopters building their own products based on this template, see the [Adopter Guide](ADOPTER.md) for additional considerations.
+对于基于此模板构建自己产品的采用者，请参阅[采用者指南](ADOPTER.md)了解其他注意事项。
 
-### Repository Structure
+### 仓库结构
 
-- Root level configures mono-repo build with lerna
-- `applications` groups the different app targets
-  - `browser` contains a browser based version of Eclipse Theia IDE that may be packaged as a Docker image
-  - `electron` contains the electron app to package, packaging configuration, and E2E tests for the electron target.
-- `theia-extensions` groups the various custom theia extensions for the Eclipse Theia IDE
-  - `product` contains a Theia extension contributing the product branding (about dialogue and welcome page).
-  - `updater` contains a Theia extension contributing the update mechanism and corresponding UI elements (based on the electron updater).
-  - `launcher` contains a Theia extension contributing, for AppImage applications, the option to create a script that allows starting the Eclipse Theia IDE from the command line by calling the 'theia' command.
-- `patches` contains patches applied to upstream packages
+- 根目录使用 lerna 配置 mono-repo 构建
+- `applications` 汇集了不同的应用目标
+  - `browser` 包含基于浏览器的 Eclipse Theia IDE 版本，可打包为 Docker 镜像
+  - `electron` 包含要打包的 Electron 应用、打包配置以及 electron 目标的 E2E 测试。
+- `theia-extensions` 汇集了 Eclipse Theia IDE 的各种自定义 Theia 扩展
+  - `product` 包含一个提供产品品牌化的 Theia 扩展（关于对话框与欢迎页）。
+  - `updater` 包含一个提供更新机制及相应 UI 元素的 Theia 扩展（基于 electron updater）。
+  - `launcher` 包含一个 Theia 扩展，为 AppImage 应用提供创建脚本的选项，从而可以通过在命令行调用 'theia' 命令来启动 Eclipse Theia IDE。
+- `patches` 包含应用于上游软件包的补丁
 
-### Build
+### 构建
 
-For development and casual testing of the Eclipse Theia IDE, one can build it in "dev" mode. This permits building the IDE on systems with less resources, like a Raspberry Pi 4B with 4GB of RAM.
+对于 Eclipse Theia IDE 的开发和日常测试，可以以 "dev" 模式构建。这使得在资源较少的系统（如配备 4GB 内存的 Raspberry Pi 4B）上也能构建 IDE。
 
-NOTE: If manually building after updating dependencies or pulling to a newer commit, run `git clean -xfd` to help avoid runtime conflicts.
+注意：如果在更新依赖或拉取到更新的提交后手动构建，请运行 `git clean -xfd` 以帮助避免运行时冲突。
 
 ```sh
-# Build "dev" version of the app. It's quicker, uses less resources,
-# but the front end app is not "minified"
+# 构建应用的 "dev" 版本。速度更快，占用资源更少，
+# 但前端应用不经过 "minify"（压缩混淆）
 pnpm install && pnpm build:dev && pnpm download:plugins
 ```
 
-Production applications:
+生产版本应用：
 
 ```sh
-# Build production version of the Eclipse Theia IDE app
+# 构建 Eclipse Theia IDE 应用的生产版本
 pnpm install && pnpm build && pnpm download:plugins
 ```
 
-### Package the Applications
+### 打包应用
 
-Currently we only produce packages for the Electron application.
+目前我们只为 Electron 应用生成安装包。
 
-_If you are trying to compile for ARM on an ARM machine, you may want to follow [these steps](https://github.com/eclipse-theia/theia-ide/issues/690#issuecomment-4157768849) beforehand._
+_如果你正尝试在 ARM 机器上为 ARM 编译，可能需要提前遵循[这些步骤](https://github.com/eclipse-theia/theia-ide/issues/690#issuecomment-4157768849)。_
 
 ```sh
 pnpm package:applications
-# or
+# 或者
 pnpm electron package
 ```
 
-The packaged application is located in `applications/electron/dist`.
+打包后的应用位于 `applications/electron/dist`。
 
-### Create a Preview Electron Application (without packaging it)
+### 创建预览版 Electron 应用（不打包）
 
 ```sh
 pnpm electron package:preview
 ```
 
-The packaged application is located in `applications/electron/dist`.
+打包后的应用位于 `applications/electron/dist`。
 
-### Running E2E Tests on Electron
+### 在 Electron 上运行 E2E 测试
 
-The E2E tests are basic UI tests of the actual application, run against the preview of the packaged application.
+E2E 测试是针对实际应用的基础 UI 测试，针对打包应用的预览版运行。
 
 ```sh
 pnpm electron package:preview
 pnpm electron test
 ```
 
-### Running Browser app
+### 运行浏览器应用
 
-The browser app may be started with
+浏览器应用可以通过以下命令启动：
 
 ```sh
 pnpm browser start
 ```
 
-Then connect to <http://localhost:3000/>.
+然后连接到 <http://localhost:3000/>。
 
-### Developing with Local Theia Framework
+### 使用本地 Theia 框架进行开发
 
-To build and test the Theia IDE against a local development version of the Theia framework, see [docs/developing-with-local-theia.md](docs/developing-with-local-theia.md).
+要针对本地开发版本的 Theia 框架构建和测试 Theia IDE，请参阅 [docs/developing-with-local-theia.md](docs/developing-with-local-theia.md)。
 
-### Troubleshooting
+### 故障排查
 
 - [_"Don't expect that you can build app for all platforms on one platform."_](https://www.electron.build/multi-platform-build)
 
-### Reporting Feature Requests and Bugs
+### 报告功能请求与缺陷
 
-The features in the Eclipse Theia IDE are based on Theia and the included extensions/plugins. For bugs in Theia please consider opening an issue in the [Theia project on Github](https://github.com/eclipse-theia/theia/issues/new/choose).
-The Eclipse Theia IDE only packages existing functionality into a product and installers for the product. If you believe there is a mistake in packaging, something needs to be added to the packaging or the installers do not work properly, please [open an issue on Github](https://github.com/eclipse-theia/theia-ide/issues/new/choose) to let us know.
+Eclipse Theia IDE 中的功能基于 Theia 以及所包含的扩展/插件。对于 Theia 中的缺陷，请考虑在 [GitHub 上的 Theia 项目](https://github.com/eclipse-theia/theia/issues/new/choose)中提交 issue。
+Eclipse Theia IDE 只是将现有功能打包成产品以及产品的安装程序。如果你认为打包有误、打包中需要添加某些内容，或者安装程序无法正常工作，请[在 GitHub 上提交 issue](https://github.com/eclipse-theia/theia-ide/issues/new/choose) 告知我们。
 
-### Linux (AppImage)
+### Linux（AppImage）
 
-The AppImage distribution of the Theia IDE requires FUSE (`libfuse2`) to be installed on the system. This is a general requirement of the AppImage format, not specific to Theia IDE. See the [AppImage documentation](https://docs.appimage.org/user-guide/troubleshooting/fuse.html) for details and installation instructions per distribution.
+Theia IDE 的 AppImage 发行版要求系统安装 FUSE（`libfuse2`）。这是 AppImage 格式的通用要求，并非 Theia IDE 特有。详情及各发行版的安装说明请参阅 [AppImage 文档](https://docs.appimage.org/user-guide/troubleshooting/fuse.html)。
 
 ### Docker
 
-The Docker image of the Theia IDE is currently in _experimental state_. It is built from the same sources and packages as the desktop version, but it is not part of the [preview test](https://github.com/eclipse-theia/theia-ide/blob/master/PUBLISHING.md#preview-testing-and-release-process-for-the-theia-ide).
-You can find a prebuilt Docker image of the IDE [here](https://github.com/eclipse-theia/theia-ide/pkgs/container/theia-ide%2Ftheia-ide).
+Theia IDE 的 Docker 镜像目前处于_实验状态_。它与桌面版本基于相同的源码和软件包构建，但不属于 [Theia IDE 的预览测试与发布流程](https://github.com/eclipse-theia/theia-ide/blob/master/PUBLISHING.md#preview-testing-and-release-process-for-the-theia-ide)的一部分。
+你可以在[这里](https://github.com/eclipse-theia/theia-ide/pkgs/container/theia-ide%2Ftheia-ide)找到 IDE 预构建的 Docker 镜像。
 
-You can also create the Docker image for the Eclipse Theia IDE based on the browser app with the following build command:
+你也可以使用以下构建命令，基于浏览器应用为 Eclipse Theia IDE 创建 Docker 镜像：
 
 ```sh
 docker build -t theia-ide -f browser.Dockerfile .
 ```
 
-You may then run this with
+然后可以通过以下命令运行：
 
 ```sh
 docker run -p=3000:3000 --rm theia-ide
 ```
 
-Then connect to <http://localhost:3000/>.
+然后连接到 <http://localhost:3000/>。

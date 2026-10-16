@@ -987,6 +987,9 @@ importers:
       '@theia/workspace':
         specifier: workspace:*
         version: link:../../theia/packages/workspace
+      cookie:
+        specifier: ^1.1.1
+        version: 1.1.1
       inversify:
         specifier: ^6.2.2
         version: 6.2.2(reflect-metadata@0.2.2)
@@ -994,6 +997,21 @@ importers:
         specifier: ^19.2.8
         version: 19.3.1
     devDependencies:
+      '@types/chai':
+        specifier: ^4.3.0
+        version: 4.3.20
+      '@types/express':
+        specifier: ^4.17.25
+        version: 4.17.25
+      '@types/mocha':
+        specifier: ^10.0.10
+        version: 10.0.10
+      chai:
+        specifier: ^4.3.10
+        version: 4.5.0
+      mocha:
+        specifier: ^11.8.0
+        version: 11.8.0
       rimraf:
         specifier: ^2.7.1
         version: 2.7.1

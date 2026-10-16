@@ -154,27 +154,27 @@ export class TheiaDesktopFileServiceEndpoint implements BackendApplicationContri
     protected getDesktopFileContents(applicationName: string, appImagePath: string, imagePath: string): string {
         return `[Desktop Entry]
 Name=${applicationName}
-GenericName=Integrated Development Environment
+GenericName=集成开发环境
 Exec=${appImagePath} %U
 Terminal=false
 Type=Application
 Icon=${imagePath}
 StartupWMClass=${this.getAppId(applicationName)}
-Comment=IDE for cloud and desktop
+Comment=面向云端与桌面的 IDE
 Categories=Development;IDE;`;
     }
 
     protected getDesktopURLFileContents(applicationName: string, appImagePath: string, imagePath: string, uriScheme: string): string {
         return `[Desktop Entry]
 Name=${applicationName} - URL Handler
-GenericName=Integrated Development Environment
+GenericName=集成开发环境
 Exec=${appImagePath} --open-url %U
 Terminal=false
 Type=Application
 NoDisplay=true
 Icon=${imagePath}
 MimeType=x-scheme-handler/${uriScheme};
-Comment=IDE for cloud and desktop
+Comment=面向云端与桌面的 IDE
 Categories=Development;IDE;`;
     }
 

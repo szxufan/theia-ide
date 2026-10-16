@@ -23,6 +23,7 @@
     "frontend": {
       "config": {
         "applicationName": "Theia IDE",
+        "defaultLocale": "zh-cn",
         "reloadOnReconnect": true,
         "preferences": {
           "toolbar.showToolbar": true

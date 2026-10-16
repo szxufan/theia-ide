@@ -18,7 +18,7 @@ import { DesktopFileService } from './desktopfile-service';
 export namespace LauncherCommands {
     export const CREATE_LAUNCHER: Command = {
         id: 'theia-ide.launcher.create',
-        label: 'Create CLI Launcher',
+        label: '创建 CLI 启动器',
         category: 'Theia IDE'
     };
 }
@@ -60,13 +60,13 @@ export class CreateLauncherCommandContribution implements FrontendApplicationCon
             }
             const messageContainer = document.createElement('div');
             // eslint-disable-next-line max-len
-            messageContainer.textContent = nls.localizeByDefault(`Would you like to install a shell command that launches the application?\nYou will be able to run ${applicationName} from the command line by typing '${uriScheme}'.`);
+            messageContainer.textContent = nls.localizeByDefault(`是否安装用于启动应用程序的 shell 命令？\n安装后，您可以在命令行中输入 '${uriScheme}' 来运行 ${applicationName}。`);
             messageContainer.setAttribute('style', 'white-space: pre-line');
             const details = document.createElement('p');
-            details.textContent = 'Administrator privileges are required, you will need to enter your password next.';
+            details.textContent = '需要管理员权限，接下来您需要输入密码。';
             messageContainer.appendChild(details);
             const dialog = new ConfirmDialog({
-                title: nls.localizeByDefault('Create launcher'),
+                title: nls.localizeByDefault('创建启动器'),
                 msg: messageContainer,
                 ok: Dialog.YES,
                 cancel: Dialog.NO
@@ -92,10 +92,10 @@ export class CreateLauncherCommandContribution implements FrontendApplicationCon
             }
             const messageContainer = document.createElement('div');
             // eslint-disable-next-line max-len
-            messageContainer.textContent = nls.localizeByDefault(`Would you like to create a .desktop file for ${applicationName}?\nThis will make it easier to open ${applicationName} directly\nfrom your applications menu and enables further features.`);
+            messageContainer.textContent = nls.localizeByDefault(`是否为 ${applicationName} 创建 .desktop 文件？\n这将使您能够更轻松地直接从应用程序菜单\n打开 ${applicationName}，并启用更多功能。`);
             messageContainer.setAttribute('style', 'white-space: pre-line');
             const dialog = new ConfirmDialog({
-                title: nls.localizeByDefault('Create .desktop file'),
+                title: nls.localizeByDefault('创建 .desktop 文件'),
                 msg: messageContainer,
                 ok: Dialog.YES,
                 cancel: Dialog.NO
@@ -127,17 +127,17 @@ export class CreateLauncherCommandContribution implements FrontendApplicationCon
     protected async confirmLauncherUpdate(uriScheme: string, isUpdate: boolean): Promise<boolean> {
         const messageContainer = document.createElement('div');
         messageContainer.textContent = isUpdate
-            ? `The CLI launcher at /usr/local/bin/${uriScheme} needs to be refreshed to match the current application.`
-            : `This will create or refresh the CLI launcher at /usr/local/bin/${uriScheme}.`;
+            ? `/usr/local/bin/${uriScheme} 处的 CLI 启动器需要刷新，以与当前应用程序保持一致。`
+            : `这将在 /usr/local/bin/${uriScheme} 处创建或刷新 CLI 启动器。`;
         messageContainer.setAttribute('style', 'white-space: pre-line');
         const details = document.createElement('p');
-        details.textContent = 'Administrator privileges are required, you will be prompted for your password next.';
+        details.textContent = '需要管理员权限，接下来会提示您输入密码。';
         messageContainer.appendChild(details);
         const dialog = new ConfirmDialog({
-            title: nls.localizeByDefault(isUpdate ? 'Update CLI launcher' : 'Create CLI launcher'),
+            title: nls.localizeByDefault(isUpdate ? '更新 CLI 启动器' : '创建 CLI 启动器'),
             msg: messageContainer,
-            ok: nls.localizeByDefault('Confirm'),
-            cancel: nls.localizeByDefault('Abort')
+            ok: nls.localizeByDefault('确认'),
+            cancel: nls.localizeByDefault('中止')
         });
         return !!await dialog.open();
     }

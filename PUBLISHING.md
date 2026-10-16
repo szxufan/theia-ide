@@ -1,200 +1,200 @@
-# Publishing Guide for the Eclipse Theia IDE
+# Eclipse Theia IDE 发布指南
 
-This document provides a unified, structured guide for publishing a new version of the Theia IDE. It covers everything from updating package versions, preview testing, releasing, promoting to stable, and other post-release activities.
+本文档提供了一套统一、结构化的指南，用于发布新版本的 Theia IDE。内容涵盖从更新软件包版本、预览测试、发布、晋升到稳定通道，以及其他发布后活动的全部流程。
 
-## Table of Contents
+## 目录
 
-1. [Overview](#1-overview)
-2. [Update Package Versions and Theia](#2-update-package-versions-and-theia)
-   - [2.0 Patch Release Branch (Optional)](#20-patch-release-branch-optional)
-   - [2.1 Install build dependencies](#21-install-build-dependencies)
-   - [2.2 Update versions](#22-update-versions)
-   - [2.3 Check for mandatory code changes](#23-check-for-mandatory-code-changes)
-   - [2.4 Prepare Release PR](#24-prepare-release-pr)
-   - [2.5 Mac Artifacts](#25-mac-artifacts)
-   - [2.6 Merge Release PR & Trigger Jenkins Build](#26-merge-release-pr--trigger-jenkins-build)
-3. [Preview, Testing, and Release Process](#3-preview-testing-and-release-process)
-   - [3.1 Confirm the new preview version is published](#31-confirm-the-new-preview-version-is-published-do-not-promote-as-stable-yet)
-   - [3.2 Announce Preview Test Phase](#32-announce-preview-test-phase)
-   - [3.3 Patch Releases](#33-patch-releases)
-4. [Promote IDE from Preview to Stable Channel](#4-promote-ide-from-preview-to-stable-channel)
-5. [Tag the Release Commit](#5-tag-the-release-commit)
-6. [Publish Docker Image](#6-publish-docker-image)
-7. [Snap Update](#7-snap-update)
-8. [Upgrade Dependencies](#8-upgrade-dependencies)
+1. [概述](#1-概述)
+2. [更新软件包版本与 Theia](#2-更新软件包版本与-theia)
+   - [2.0 补丁发布分支（可选）](#20-补丁发布分支可选)
+   - [2.1 安装构建依赖](#21-安装构建依赖)
+   - [2.2 更新版本](#22-更新版本)
+   - [2.3 检查必需的代码变更](#23-检查必需的代码变更)
+   - [2.4 准备发布 PR](#24-准备发布-pr)
+   - [2.5 Mac 产物](#25-mac-产物)
+   - [2.6 合并发布 PR 并触发 Jenkins 构建](#26-合并发布-pr-并触发-jenkins-构建)
+3. [预览、测试与发布流程](#3-预览测试与发布流程)
+   - [3.1 确认新的预览版本已发布](#31-确认新的预览版本已发布不要晋升为稳定版)
+   - [3.2 宣布预览测试阶段](#32-宣布预览测试阶段)
+   - [3.3 补丁发布](#33-补丁发布)
+4. [将 IDE 从预览通道晋升到稳定通道](#4-将-ide-从预览通道晋升到稳定通道)
+5. [为发布提交打标签](#5-为发布提交打标签)
+6. [发布 Docker 镜像](#6-发布-docker-镜像)
+7. [Snap 更新](#7-snap-更新)
+8. [升级依赖](#8-升级依赖)
 
-## 1. Overview
+## 1. 概述
 <!-- release: both -->
 
-Every commit to the master branch is automatically published as a preview version. Official updates require a version change.
+每次向 master 分支的提交都会自动发布为预览版本。官方更新需要变更版本号。
 
-This guide differentiates between two version numbers:
+本指南区分两种版本号：
 
-- **THEIA_VERSION**: (used variable: {{version}}) The version of Theia used in this release.
-- **THEIA_IDE_VERSION**: (used variable: {{ideVersion}}) The Theia IDE release version. Depending on the context:
-  - If there was **no** Theia release, increment the patch version by 1 (e.g., 1.47.0 -> 1.47.1 or 1.47.100 -> 1.47.101).
-  - For a new Theia *minor* release (e.g., 1.48.0), use the same version as Theia.
-  - For a new Theia *patch* release (e.g., 1.48.1), use Theia's patch version multiplied by 100 (e.g., 1.48.100).
+- **THEIA_VERSION**：（使用的变量：{{version}}）本次发布所使用的 Theia 版本。
+- **THEIA_IDE_VERSION**：（使用的变量：{{ideVersion}}）Theia IDE 的发布版本。视上下文而定：
+  - 如果**没有**新的 Theia 发布，则将补丁版本号加 1（例如 1.47.0 -> 1.47.1 或 1.47.100 -> 1.47.101）。
+  - 对于 Theia 新的 *minor* 发布（例如 1.48.0），使用与 Theia 相同的版本号。
+  - 对于 Theia 新的 *patch* 发布（例如 1.48.1），使用 Theia 的补丁版本号乘以 100（例如 1.48.100）。
 
-## 2. Update Package Versions and Theia
+## 2. 更新软件包版本与 Theia
 <!-- release: both -->
 
-Follow these steps to update dependencies and package versions:
+按照以下步骤更新依赖与软件包版本：
 
-### 2.0. Patch Release Branch (Optional)
+### 2.0. 补丁发布分支（可选）
 <!-- release: patch -->
 
-If commits have already landed on `master` since the last minor release and should **not** be included in the patch, use a dedicated release branch instead of working on `master` directly:
+如果自上次 minor 发布以来已有提交合入 `master`，而这些提交**不应**包含在补丁中，请使用专门的发布分支，而不是直接在 `master` 上操作：
 
-1. Create and push a branch from the minor release commit using the naming convention `release/{{version}}`:
+1. 从 minor 发布提交创建并推送一个分支，命名遵循 `release/{{version}}` 约定：
 
    ```sh
    git checkout <sha-of-minor-release> -b release/{{version}}
    git push origin release/{{version}}
    ```
 
-2. Commit your patch changes directly on this branch — **no PR is required**.
+2. 直接在该分支上提交你的补丁变更 —— **无需 PR**。
 
-When using this path, see the adjusted instructions in [2.5 Mac Artifacts](#25-mac-artifacts) and [2.6 Merge Release PR & Trigger Jenkins Build](#26-merge-release-pr--trigger-jenkins-build).
+使用此方式时，请参阅 [2.5 Mac 产物](#25-mac-产物)和 [2.6 合并发布 PR 并触发 Jenkins 构建](#26-合并发布-pr-并触发-jenkins-构建)中调整后的说明。
 
-### 2.1. Install build dependencies
+### 2.1. 安装构建依赖
 <!-- release: both -->
 
 ```sh
 pnpm install
 ```
 
-### 2.2. Update versions
+### 2.2. 更新版本
 <!-- release: both -->
 
-Determine **THEIA_IDE_VERSION** as described in [1. Overview](#1-overview), then run the release preparation script with both versions:
+按照 [1. 概述](#1-概述)中描述的方式确定 **THEIA_IDE_VERSION**，然后使用两个版本号运行发布准备脚本：
 
 ```sh
 pnpm release:prepare --theia {{version}} --ide {{ideVersion}}
 ```
 
-It updates the monorepo version, all package versions, the Theia dependencies, the versioned `@theia` patch file names and the pnpm lock file. It never derives a version, both are taken exactly as passed.
+它会更新 monorepo 版本、所有软件包版本、Theia 依赖、带版本号的 `@theia` 补丁文件名以及 pnpm 锁文件。它从不自行推导版本，两个版本号都严格按传入值使用。
 
-- Omit `--theia` if there is no new Theia release to consume, `--ide` is always required.
-- Add `--dry-run` to print the versions and the commands without running them.
+- 如果没有要使用的新 Theia 发布，可省略 `--theia`，`--ide` 则始终必填。
+- 添加 `--dry-run` 可只打印版本号和命令而不实际执行。
 
-Review the resulting diff before continuing, it should only contain version changes.
+继续之前请检查生成的 diff，它应该只包含版本变更。
 
-Optional: the manual steps would be:
+可选：手动执行的步骤为：
 
-1. Update the monorepo version to **THEIA_IDE_VERSION** (without creating a Git tag):
+1. 将 monorepo 版本更新为 **THEIA_IDE_VERSION**（不创建 Git 标签）：
 
    ```sh
    pnpm version {{ideVersion}} --no-git-tag-version
    ```
 
-2. Optional: If there is a new Theia release to consume, update Theia dependencies to **THEIA_VERSION** :
+2. 可选：如果有要使用的新 Theia 发布，将 Theia 依赖更新为 **THEIA_VERSION**：
 
    ```sh
    pnpm update:theia {{version}} && pnpm update:theia:children {{version}}
    ```
 
-3. Update all package versions to **THEIA_IDE_VERSION** (select in input prompt):
+3. 将所有软件包版本更新为 **THEIA_IDE_VERSION**（在输入提示中选择）：
 
    ```sh
    pnpm lerna version --exact --no-push --no-git-tag-version
    ```
 
-4. Update the pnpm lock file:
+4. 更新 pnpm 锁文件：
 
    ```sh
    pnpm install
    ```
 
-### 2.3. Check for mandatory code changes
+### 2.3. 检查必需的代码变更
 <!-- release: both -->
 
-Update the code to include everything that should be part of the release:
+更新代码，纳入所有应包含在本次发布中的内容：
 
-- Implement all tickets that are located in: <https://github.com/eclipse-theia/theia-ide/labels/toDoWithRelease>
-- If there was a Theia release:
-  - Review breaking changes
-  - Check for new built-ins
-  - Check sample applications changes
-  - Update code as necessary
-  - Check for new theia packages to be consumed in the example applications (in case there are no tickets)
+- 实现位于此处的所有工单：<https://github.com/eclipse-theia/theia-ide/labels/toDoWithRelease>
+- 如果有 Theia 发布：
+  - 审查破坏性变更
+  - 检查新的内置插件
+  - 检查示例应用的变更
+  - 按需更新代码
+  - 检查示例应用中要使用的新的 Theia 软件包（如果没有相关工单）
 
-### 2.4. Prepare Release PR
+### 2.4. 准备发布 PR
 <!-- release: both -->
 
-After completing step 2.3, open a PR with your changes <https://github.com/eclipse-theia/theia-ide/compare>
+完成步骤 2.3 后，带着你的变更打开一个 PR <https://github.com/eclipse-theia/theia-ide/compare>
 
-   PR Title:
+   PR 标题：
 
    ```md
    Update to Theia v{{version}}
    ```
 
-   OR (if it is a pure Theia IDE version update):
+   或（如果只是纯粹的 Theia IDE 版本更新）：
 
    ```md
    Publish Theia IDE {{ideVersion}}
    ```
 
-### 2.5. Mac Artifacts
+### 2.5. Mac 产物
 <!-- release: both -->
 
-The Jenkins build does not build the mac app itself, it downloads the unsigned dmgs from this pre-release and signs them: <https://github.com/eclipse-theia/theia-ide/releases/tag/pre-release>. Its `mac-x64.zip` and `mac-arm64.zip` assets therefore have to be replaced with the artifacts of the release build.
+Jenkins 构建不会自行构建 mac 应用，它会从此预发布中下载未签名的 dmg 并进行签名：<https://github.com/eclipse-theia/theia-ide/releases/tag/pre-release>。因此它的 `mac-x64.zip` 和 `mac-arm64.zip` 资产必须替换为发布构建的产物。
 
-Trigger the [Build, package and test](https://github.com/eclipse-theia/theia-ide/actions/workflows/build.yml) workflow on the release branch (the head branch of the release PR, or `release/{{version}}` for a patch release) and enable the **Upload the mac artifacts to the rolling 'pre-release'** option. Once the build is green on all platforms, it replaces both assets in place.
+在发布分支（发布 PR 的 head 分支，补丁发布则为 `release/{{version}}`）上触发 [Build, package and test](https://github.com/eclipse-theia/theia-ide/actions/workflows/build.yml) 工作流，并启用 **Upload the mac artifacts to the rolling 'pre-release'** 选项。一旦构建在所有平台上变绿，它就会原地替换这两个资产。
 
-Optional: the manual steps would be to download the two zip files from the run, which the build uploads as regular workflow artifacts on pull request builds as well, and to replace the two pre-release assets by hand.
+可选：手动执行的步骤是从该次运行中下载两个 zip 文件（在 PR 构建中构建也会将其作为普通工作流产物上传），然后手动替换两个预发布资产。
 
-### 2.6. Merge Release PR & Trigger Jenkins Build
+### 2.6. 合并发布 PR 并触发 Jenkins 构建
 <!-- release: both -->
 
-1. Merge PR
+1. 合并 PR
 
-2. ==> Steps 2.4 and 2.5 need to be complete to proceed!
+2. ==> 必须先完成步骤 2.4 和 2.5 才能继续！
 
-3. Once [CI checks after merge to master are complete](https://github.com/eclipse-theia/theia-ide/actions), trigger the Jenkins Release Preview <https://ci.eclipse.org/theia/job/theia-ide-release/> job without parameters.
+3. 一旦[合并到 master 后的 CI 检查完成](https://github.com/eclipse-theia/theia-ide/actions)，不带参数触发 Jenkins Release Preview <https://ci.eclipse.org/theia/job/theia-ide-release/> 任务。
 
-4. Once 3. is successful the notarize job <https://ci.eclipse.org/theia/job/theia-ide-sign-notarize/> is started automatically.
+4. 一旦第 3 步成功，公证任务 <https://ci.eclipse.org/theia/job/theia-ide-sign-notarize/> 会自动启动。
 
-5. Once 4. is successful it starts the upload job <https://ci.eclipse.org/theia/job/theia-ide-upload/>
+5. 一旦第 4 步成功，它会启动上传任务 <https://ci.eclipse.org/theia/job/theia-ide-upload/>
 
-  *Note*: Please report if upload fails more than 5 times, we need to investigate!
+  *注意*：如果上传失败超过 5 次请报告，我们需要调查！
 
-> **Patch release branch:** If using a `release/{{version}}` branch:
+> **补丁发布分支：** 如果使用 `release/{{version}}` 分支：
 >
-> - Skip step 1 (no PR to merge). Proceed once CI checks on the release branch are complete.
-> - Before triggering the Jenkins jobs, change the branch specifier from `master` to `release/{{version}}` on all three jobs:
+> - 跳过第 1 步（无需合并 PR）。发布分支上的 CI 检查完成后即可继续。
+> - 在触发 Jenkins 任务之前，将所有三个任务的分支标识符从 `master` 改为 `release/{{version}}`：
 >   - <https://ci.eclipse.org/theia/job/theia-ide-release/>
 >   - <https://ci.eclipse.org/theia/job/theia-ide-sign-notarize/>
 >   - <https://ci.eclipse.org/theia/job/theia-ide-upload/>
-> - ⚠️ **Reminder:** Once the preview build is complete, revert the branch specifier back to `master` on all three Jenkins jobs.
+> - ⚠️ **提醒：** 预览构建完成后，将所有三个 Jenkins 任务的分支标识符改回 `master`。
 
-## 3. Preview, Testing, and Release Process
+## 3. 预览、测试与发布流程
 <!-- release: both -->
 
-Once the PR is merged and the preview build is created, follow these steps for testing and eventual release:
+PR 合并并创建预览构建后，按照以下步骤进行测试和最终发布：
 
-### 3.1 Confirm the new preview version is published (do not promote as stable yet)
+### 3.1 确认新的预览版本已发布（不要晋升为稳定版）
 <!-- release: both -->
 
-- Check if uploaded versions are complete in in download folder <https://download.eclipse.org/theia/ide-preview/{{ideVersion}}/>
-  - e.g. check if the latest files are correct and the artifacts are there (in doubt, compare to previous versions)
+- 检查下载目录 <https://download.eclipse.org/theia/ide-preview/{{ideVersion}}/> 中已上传的版本是否完整
+  - 例如检查最新的文件是否正确、产物是否齐全（如有疑问，可与之前的版本对比）
 
-### 3.2 Announce Preview Test Phase
+### 3.2 宣布预览测试阶段
 <!-- release: minor -->
 
 ### 3.2.1 GH Discussions
 <!-- release: minor -->
 
-- Use GitHub Discussions for the announcement in the [Category Release Announcements](https://github.com/eclipse-theia/theia/discussions/new?category=release-announcements).
+- 使用 GitHub Discussions 在 [Release Announcements 分类](https://github.com/eclipse-theia/theia/discussions/new?category=release-announcements)发布公告。
 
-   Title:
+   标题：
 
    ```md
    Theia IDE {{majorMinor}}.x Preview Testing
    ```
 
-   Body:
+   正文：
 
    ```md
    The new version {{ideVersion}} of the Theia IDE is available on the preview channel now. Please join the preview testing!
@@ -220,20 +220,20 @@ Once the PR is merged and the preview build is created, follow these steps for t
    | Snap updated | {{previewEnd}} + 1 business day |  |
    ```
 
-- Pin discussion to the Release Announcement Category
+- 将该讨论置顶到 Release Announcement 分类
 
-### 3.2.2 theia-dev mailing list
+### 3.2.2 theia-dev 邮件列表
 <!-- release: minor -->
 
-- Announce the preview release via email to [the `theia-dev` mailing List](mailto:theia-dev@eclipse.org) with the following template:
+- 通过电子邮件向 [the `theia-dev` 邮件列表](mailto:theia-dev@eclipse.org)宣布预览发布，使用以下模板：
 
-   Subject:
+   主题：
 
    ```md
    Theia IDE {{majorMinor}}.x preview phase
    ```
 
-   Body:
+   正文：
 
    ```md
    Hi everyone,
@@ -242,10 +242,10 @@ Once the PR is merged and the preview build is created, follow these steps for t
    Visit the preview discussion for more information and coordination: https://github.com/eclipse-theia/theia/discussions/{{discussionNumber}}
    ```
 
-### 3.2.3 Eclipse Theia Release discussion
+### 3.2.3 Eclipse Theia Release 讨论
 <!-- release: minor -->
 
-- Announce the start of the Theia IDE Preview Test phase in the Theia Release announcement (`Eclipse Theia v{{version}}`) discussion (see <https://github.com/eclipse-theia/theia/discussions/categories/release-announcements>):
+- 在 Theia Release 公告（`Eclipse Theia v{{version}}`）讨论中宣布 Theia IDE 预览测试阶段的开始（参见 <https://github.com/eclipse-theia/theia/discussions/categories/release-announcements>）：
 
    ```md
    The preview test phase for the Theia IDE {{ideVersion}} has started. You can find the details here: 
@@ -253,10 +253,10 @@ Once the PR is merged and the preview build is created, follow these steps for t
    - https://github.com/eclipse-theia/theia/discussions/{{discussionNumber}}
    ```
 
-### 3.2.4 Optional: Announcement to Theia IDE Preview Testers
+### 3.2.4 可选：向 Theia IDE 预览测试者发布公告
 <!-- release: minor -->
 
-- Optional: Announce the start of the Theia IDE Preview Test phase to your testers (e.g., via Slack, Teams, E-Mail):
+- 可选：向你的测试者宣布 Theia IDE 预览测试阶段的开始（例如通过 Slack、Teams、电子邮件）：
 
    ```md
    :theia: The Theia IDE preview {{ideVersion}} for Theia version {{version}} is now available!
@@ -266,23 +266,23 @@ Once the PR is merged and the preview build is created, follow these steps for t
    Thanks!
    ```
 
-### 3.3 Patch Releases
+### 3.3 补丁发布
 <!-- release: patch -->
 
-- Address reported blockers and issue patch releases (this process may take 1–2 weeks).
+- 处理报告的阻断问题并发布补丁版本（此过程可能需要 1–2 周）。
 
-   **Note:** If issues are persistent, or resources are insufficient, the release may be postponed to the next version.
+   **注意：** 如果问题持续存在，或资源不足，发布可能推迟到下一个版本。
 
-- If a blocker was found add this status to the respective preview window:
+- 如果发现了阻断问题，在相应的预览窗口中添加此状态：
 
    ```md
     :no_entry:  blocker was found 
    ```
 
-### 3.3.1 Update Preview Discussion with new preview
+### 3.3.1 在预览讨论中更新新的预览版本
 <!-- release: patch -->
 
-- For Patch Releases, use the [Preview discussion](#32-announce-preview-test-phase) and post a comment to announce the patch release of the Theia IDE: <https://github.com/eclipse-theia/theia/discussions/{{discussionNumber}}>
+- 对于补丁发布，使用[预览讨论](#32-宣布预览测试阶段)并发表评论，宣布 Theia IDE 的补丁发布：<https://github.com/eclipse-theia/theia/discussions/{{discussionNumber}}>
 
    ```md
    The new version {{ideVersion}} of the Theia IDE is available on the preview channel now. Please join the preview testing!
@@ -300,26 +300,26 @@ Once the PR is merged and the preview build is created, follow these steps for t
    If you find any issues, please mention them in this thread and report them as an issue once confirmed by other testers.
    ```
 
-### 3.3.2 Update Preview Discussion Table
+### 3.3.2 更新预览讨论状态表
 <!-- release: patch -->
 
-- Adapt the target dates to the planned new preview window and final release dates
-- Add comments in the status if necessary
-- See example announcements here: <https://github.com/eclipse-theia/theia/discussions/16109>
+- 将目标日期调整为计划中的新预览窗口和最终发布日期
+- 如有需要在状态中添加评论
+- 示例公告参见：<https://github.com/eclipse-theia/theia/discussions/16109>
 
-- Update the discussion's status table with two rows for the current patch release:
+- 在讨论的状态表中为当前补丁发布添加两行：
 
    ```md
    | [{{ideVersion}} preview available]({{linkToNewPreviewComment}}) | {{previewStart}} | :white_check_mark: |
    | {{ideVersion}} community preview window | {{previewStart}} → {{previewEnd}} | :hourglass_flowing_sand: |
    ```
 
-- Also adapt the target dates of the remaining entries in table (if not yet promoted)
+- 同时调整表中其余条目的目标日期（如果尚未晋升）
 
-### 3.3.3 Optional: Internal Slack announcement
+### 3.3.3 可选：内部 Slack 公告
 <!-- release: patch -->
 
-- Optional: Announce the start of the Theia IDE Preview Test phase in your internal Slack channel:
+- 可选：在你的内部 Slack 频道中宣布 Theia IDE 预览测试阶段的开始：
 
    ```md
    :theia: The Theia IDE preview {{ideVersion}} for Theia version {{version}} is now available!
@@ -329,10 +329,10 @@ Once the PR is merged and the preview build is created, follow these steps for t
    Thanks!
    ```
 
-## 3.4 Optional: Internal Slack - feedback reminder
+## 3.4 可选：内部 Slack — 反馈提醒
 <!-- release: both -->
 
-- Optional: Schedule a slack reminder close to the preview end:
+- 可选：在预览期临近结束时安排一条 Slack 提醒：
 
 ```md
 Quick reminder: We're planning to promote the new IDE version (e.g., tomorrow/on Monday), please share your feedback for the preview {{ideVersion}}!
@@ -340,98 +340,98 @@ Quick reminder: We're planning to promote the new IDE version (e.g., tomorrow/on
 Thanks! :thx:
 ```
 
-## 4. Promote IDE from Preview to Stable Channel
+## 4. 将 IDE 从预览通道晋升到稳定通道
 <!-- release: both -->
 
-Promote the IDE using the [Build Job](https://ci.eclipse.org/theia/job/Theia%20-%20Promote%20IDE/).
+使用 [Build Job](https://ci.eclipse.org/theia/job/Theia%20-%20Promote%20IDE/) 晋升 IDE。
 
-- Specify the release version in the `VERSION` parameter (e.g., 1.48.0), corresponding to the **THEIA_IDE_VERSION** copied from <https://download.eclipse.org/theia/ide-preview/>.
+- 在 `VERSION` 参数中指定发布版本（例如 1.48.0），对应从 <https://download.eclipse.org/theia/ide-preview/> 复制来的 **THEIA_IDE_VERSION**。
 
-- Post a comment to announce the official release of the Theia IDE:
+- 发表评论，宣布 Theia IDE 正式发布：
 
    ```md
    [{{ideVersion}} has been promoted to stable](https://download.eclipse.org/theia/ide/{{ideVersion}}/)
    ```
 
-  - Update the [Base Preview discussion](#32-announce-preview-test-phase) status table with a checkmark and the version that has been published.
+  - 在[预览讨论](#32-宣布预览测试阶段)状态表中更新勾选标记和已发布的版本。
 
    ```md
    | [Theia IDE {{ideVersion}} Promoted to Stable](https://download.eclipse.org/theia/ide/{{ideVersion}}/) | {{today}} | :white_check_mark: |
    ```
 
-  - Mark the message as the answer.
+  - 将该消息标记为答案。
 
-  - Unpin discussion from the Release Announcement Category.
+  - 将讨论从 Release Announcement 分类中取消置顶。
 
-## 5. Tag the Release Commit
+## 5. 为发布提交打标签
 <!-- release: both -->
 
-After promoting the release, tag the release commit as follows:
+晋升发布后，按如下方式为发布提交打标签：
 
-1. Create the tag:
+1. 创建标签：
 
    ```bash
    git tag v{{ideVersion}} ${SHA of release commit}
    ```
 
-2. Push the tag to the repository:
+2. 将标签推送到仓库：
 
    ```bash
    git push origin v{{ideVersion}}
    ```
 
-## 6. Publish Docker Image
+## 6. 发布 Docker 镜像
 <!-- release: both -->
 
-Publish the Docker image by running the [workflow](https://github.com/eclipse-theia/theia-ide/actions/workflows/publish-theia-ide-img.yml) from the `master` branch or the release tag.
-Use **${THEIA_IDE_VERSION}** as the version. We do **NOT** use the v prefix here in this case currently.
+通过从 `master` 分支或发布标签运行[工作流](https://github.com/eclipse-theia/theia-ide/actions/workflows/publish-theia-ide-img.yml)来发布 Docker 镜像。
+使用 **${THEIA_IDE_VERSION}** 作为版本号。当前在这种情况下我们**不**使用 v 前缀。
 
-- Check the GH package page if the image was published correctly: <https://github.com/eclipse-theia/theia-ide/pkgs/container/theia-ide%2Ftheia-ide>
+- 在 GH 软件包页面检查镜像是否正确发布：<https://github.com/eclipse-theia/theia-ide/pkgs/container/theia-ide%2Ftheia-ide>
 
-- Update the [Preview discussion](#32-announce-preview-test-phase) status table
+- 更新[预览讨论](#32-宣布预览测试阶段)状态表
 
    ```md
    | [Docker image {{ideVersion}} published](https://github.com/eclipse-theia/theia-ide/pkgs/container/theia-ide%2Ftheia-ide) | {{today}} | :white_check_mark: |
    ```
 
-## 7. Snap Update
+## 7. Snap 更新
 <!-- release: both -->
 
-Can be parallel to step 6.
-After the IDE is promoted to stable, perform these steps for the snap update:
+可与步骤 6 并行进行。
+IDE 晋升到稳定版后，执行以下步骤进行 snap 更新：
 
-1. Run [this workflow](https://github.com/eclipse-theia/theia-ide-snap/actions/workflows/update.yml) from the `master` branch.
-2. After the build succeeded, visit <https://github.com/eclipse-theia/theia-ide-snap/pulls> to find the PR that updates to **${THEIA_IDE_VERSION}**.
-3. Check out the corresponding branch.
-4. Amend the latest commit with your author details:
+1. 从 `master` 分支运行[此工作流](https://github.com/eclipse-theia/theia-ide-snap/actions/workflows/update.yml)。
+2. 构建成功后，访问 <https://github.com/eclipse-theia/theia-ide-snap/pulls> 找到更新到 **${THEIA_IDE_VERSION}** 的 PR。
+3. 检出对应的分支。
+4. 使用你的作者信息修正（amend）最新提交：
 
    ```bash
    git commit --amend --author="Your Name <name@example.com>"
    ```
 
-5. Force push the branch.
-6. Verify that all checks pass, and then `rebase and merge`.
-7. Confirm the master branch build (Store Publishing) is successful.
-8. Check if snap is available <https://snapcraft.io/theia-ide>
-9. Update the [Preview discussion](#32-announce-preview-test-phase) status table
+5. 强制推送该分支。
+6. 确认所有检查通过，然后执行 `rebase and merge`。
+7. 确认 master 分支构建（Store Publishing）成功。
+8. 检查 snap 是否可用 <https://snapcraft.io/theia-ide>
+9. 更新[预览讨论](#32-宣布预览测试阶段)状态表
 
    ```md
    | [Snap latest/stable updated to {{ideVersion}}](https://snapcraft.io/theia-ide) | {{today}} | :white_check_mark: |
    ```
 
-## 8. Upgrade Dependencies
+## 8. 升级依赖
 <!-- release: both -->
 
-After each release, run the following command to upgrade dependencies:
+每次发布后，运行以下命令升级依赖：
 
-Keep this upgrade process in a separate PR, as it might require IP Reviews from the Eclipse Foundation and additional time. Also, verify the `electron` version in `pnpm-lock.yaml` and adjust `electronVersion` in `applications/electron/electron-builder.yml` if it has changed.
+请将此升级流程放在单独的 PR 中进行，因为它可能需要 Eclipse Foundation 的 IP 审查以及额外时间。此外，请核对 `pnpm-lock.yaml` 中的 `electron` 版本，如有变化则调整 `applications/electron/electron-builder.yml` 中的 `electronVersion`。
 
-To perform the upgrade:
+执行升级的步骤：
 
-- Run `pnpm update -r` at the root of the repository.
-- Fix any compilation errors, typing errors, and failing tests.
-- Open a PR with the changes ([example](https://github.com/eclipse-theia/theia-ide/pull/568)).
-- The license check review is done via the CI.
-- Wait for the "IP Check" to complete ([example](https://gitlab.eclipse.org/eclipsefdn/emo-team/iplab/-/issues/22828)).
+- 在仓库根目录运行 `pnpm update -r`。
+- 修复所有编译错误、类型错误和失败的测试。
+- 带着变更打开一个 PR（[示例](https://github.com/eclipse-theia/theia-ide/pull/568)）。
+- 许可证检查审查通过 CI 完成。
+- 等待 "IP Check" 完成（[示例](https://gitlab.eclipse.org/eclipsefdn/emo-team/iplab/-/issues/22828)）。
 
-Performing this after the release helps us to find issues with the new dependencies and gives time to perform a license check on the dependencies.
+在发布后执行此操作有助于我们发现新依赖的问题，并为依赖的许可证检查留出时间。

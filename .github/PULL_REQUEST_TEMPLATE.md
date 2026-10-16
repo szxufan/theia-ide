@@ -1,21 +1,19 @@
 <!--
-Thank you for your Pull Request. Please provide a description and review
-the requirements below.
+感谢你提交 Pull Request。请提供描述并检查以下要求。
 
-Contributors guide: https://github.com/theia-ide/theia/blob/master/CONTRIBUTING.md
+贡献者指南：https://github.com/theia-ide/theia/blob/master/CONTRIBUTING.md
 -->
 
-#### What it does
-<!-- Include relevant issues and describe how they are addressed. -->
+#### 它做了什么
+<!-- 请包含相关的 issue 并描述它们是如何被解决的。 -->
 
-#### How to test
-<!-- Explain how a reviewer can reproduce a bug, test new functionality or verify performance improvements. -->
+#### 如何测试
+<!-- 说明审查者如何复现缺陷、测试新功能或验证性能改进。 -->
 
-#### Review checklist
+#### 审查清单
 
-- [ ] as an author, I have thoroughly tested my changes and carefully followed [the review guidelines](https://github.com/theia-ide/theia/blob/master/doc/pull-requests.md#requesting-a-review)
+- [ ] 作为作者，我已对自己的变更进行了充分测试，并严格遵循了[审查指南](https://github.com/theia-ide/theia/blob/master/doc/pull-requests.md#requesting-a-review)
 
-#### Reminder for reviewers
+#### 提醒审查者
 
-- as a reviewer, I agree to behave in accordance with [the review guidelines](https://github.com/theia-ide/theia/blob/master/doc/pull-requests.md#reviewing)
-
+- 作为审查者，我同意依照[审查指南](https://github.com/theia-ide/theia/blob/master/doc/pull-requests.md#reviewing)行事

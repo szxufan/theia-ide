@@ -73,11 +73,19 @@ pnpm theia:update                                # 子模块更新到远端跟�
 
 ## theia 子模块（fork）自定义点
 
-fork（szxufan/theia）相对上游的定制，详见 [docs/developing-with-local-theia.md](docs/developing-with-local-theia.md) 的 "Fork Customizations in the Submodule" 一节：
+fork（szxufan/theia）相对上游的定制，详见 [docs/developing-with-local-theia.md](docs/developing-with-local-theia.md) 的「子模块中的 Fork 自定义」一节：
 
-1. **自动中文界面**：`packages/core/src/browser/preload/i18n-preload-contribution.ts` 在系统语言为中文时自动设置 `nls.locale = 'zh-cn'`。
+1. **单语言（仅简体中文）产品**：
+   - 删除了全部多语言支持（含英语语言数据与繁体中文）。语言数据仅保留 `packages/core/i18n/nls.zh-cn.json`；语言切换命令与 QuickPick 已删除；`nls.locale`/`nls.defaultLocale` 固定为 `zh-cn`（`packages/core/src/common/nls.ts`）。
+   - 前端 preload（`i18n-preload-contribution.ts`）启动时始终加载 zh-cn 本地化（保留 10s 超时保护），失败直接使用源码中文默认值。
+   - 源码中所有面向用户的字符串（约 500+ 文件）已直接翻译为中文；`nls.zh-cn.json` 与 zh-hans 语言包插件仅作兜底。根 `package.json` 的 `MS-CEINTL.vscode-language-pack-zh-hans` 条目**必须保留**（Monaco 与内置 VS Code 扩展中文文案来源）。
+   - 插件宿主（plugin-ext）禁用了「默认语言跳过翻译」捷径（`isDefaultLanguage` 恒为 false），保证插件始终被语言包翻译。
+   - 三个应用 `theia.frontend.config` 均设置 `"defaultLocale": "zh-cn"`。
+   - **注意**：本 fork 与上游已无法直接合并（源码字符串与文档大面积中文化），`pnpm theia:sync` 后需手工解决大量冲突。
+   - 文档：主仓库与子模块内全部 Markdown 均已翻译为中文（LICENSE/NOTICE 等法律文件除外）。
+   - AI 聊天代理显示名中文化：`Agent.displayName`（`ai-core`）+ `getAgentDisplayName()`（`ai-chat`）承载中文显示名（编码/架构/通用/编排等）；`name`/`id` 保持英文，是 @提及、偏好配置与持久化的标识，不要改动。
 2. **本地化加载韧性**：
-   - 前端 preload 对 `loadLocalization` 增加 10s 超时，超时/失败回退默认语言，避免白屏。
+   - 前端 preload 对 `loadLocalization` 增加 10s 超时，避免白屏。
    - 后端 `packages/plugin-ext/src/hosted/node/hosted-plugin-localization-service.ts` 的缓存目录清理失败（如被运行中的实例锁定导致 EPERM）时降级到进程级临时目录，且保证 `ready` 永远 resolve，不阻塞插件部署。
    - 回归测试：同目录下的 `*.spec.ts`（`hosted-plugin-localization-service.spec.ts`、`i18n-preload-contribution.spec.ts`）。
 
@@ -87,7 +95,9 @@ fork（szxufan/theia）相对上游的定制，详见 [docs/developing-with-loca
 
 - **不要使用 yarn 或 npm**：安装、脚本运行、版本操作一律 pnpm（`pnpm install`、`pnpm <script>`、`pnpm version`、`pnpm update -r`）。
 - 修改代码时同步更新文档与测试。
+- **本产品为仅简体中文版本**：不要恢复多语言机制（语言切换命令、其他语言数据文件）或在源码中新增英文用户可见文案；新增 UI 字符串直接写中文。
 - `theia/` 子模块内的上游文档仍保留 yarn 表述（上游框架本身用 yarn），**不要**为了统一而改动子模块内的上游文件，避免同步冲突。
 - `releng/`、`next/`、`cleanup/` 下的 Jenkinsfile 是 Eclipse 基金会上游 CI 配置，仍使用 yarn，本地开发不涉及。
 - `.npmrc` 配置了扁平化 hoisting，使 theia build、esbuild、原生模块重建等遍历 node_modules 的工具正常工作，不要随意改动。
 - Windows 上调试可使用 `THEIA_CONFIG_DIR` 环境变量隔离配置目录，避免与已安装的 Theia IDE 实例互相锁定文件。
+- **浏览器版可选单用户登录**：设置 `THEIA_AUTH_USER` + `THEIA_AUTH_PASSWORD_HASH`（密码 SHA-256 hex）后启用，未配置则不启用。实现在 `theia-extensions/product/src/node/`，详见 [docs/browser-login.md](docs/browser-login.md)。

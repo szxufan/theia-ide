@@ -21,6 +21,7 @@
     "frontend": {
       "config": {
         "applicationName": "Theia IDE",
+        "defaultLocale": "zh-cn",
         "warnOnPotentiallyInsecureHostPattern": false,
         "preferences": {
           "toolbar.showToolbar": true,
