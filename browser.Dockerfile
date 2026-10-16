@@ -16,7 +16,11 @@ RUN npm install -g pnpm@9 && \
     pnpm config set network-timeout 600000 && \
     pnpm install --frozen-lockfile && \
     pnpm build:extensions && \
-    pnpm download:plugins && \
+    (for i in 1 2 3 4 5; do \
+        pnpm download:plugins && exit 0; \
+        echo "pnpm download:plugins 失败（第 $i/5 次），15 秒后重试，已下载的插件会自动跳过"; \
+        sleep 15; \
+    done; exit 1) && \
     pnpm browser build && \
     pnpm store prune && \
     rm -rf .git applications/electron theia-extensions/launcher theia-extensions/updater node_modules
