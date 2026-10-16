@@ -53,11 +53,14 @@ COPY --from=build-stage --chown=theia:theia /home/theia /home/theia
 
 EXPOSE 3000
 
-# Health check: probe the HTTP endpoint following redirects
-# (when single-user login is enabled, GET / redirects to /login.html).
+# Health check: probe the HTTP endpoint following redirects, with an HTML
+# Accept header. When single-user login is enabled, unauthenticated requests
+# without an HTML Accept header are rejected with 401 by design (API/script
+# clients); browsers get a 302 to /login.html instead. Sending the header
+# makes the probe behave like a browser and succeed in both modes.
 # start-period covers the backend startup (plugin deployment).
 HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3 \
-  CMD curl -fL http://localhost:3000/ || exit 1
+  CMD curl -fL -H "Accept: text/html" http://localhost:3000/ || exit 1
 
 # Specify default shell for Theia and the Built-In plugins directory
 ENV SHELL=/bin/bash \
