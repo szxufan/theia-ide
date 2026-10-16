@@ -1,0 +1,56 @@
+{
+  "name": "tunnel-forwarding",
+  "displayName": "Local Tunnel Port Forwarding (built-in)",
+  "description": "Allows forwarding local ports to be accessible over the internet.",
+  "version": "1.108.2",
+  "publisher": "vscode",
+  "license": "SEE LICENSE IN LICENSE-vscode.txt",
+  "engines": {
+    "vscode": "^1.82.0"
+  },
+  "icon": "media/icon.png",
+  "capabilities": {
+    "virtualWorkspaces": false,
+    "untrustedWorkspaces": {
+      "supported": true
+    }
+  },
+  "enabledApiProposals": [
+    "resolvers",
+    "tunnelFactory"
+  ],
+  "activationEvents": [
+    "onTunnel"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "category": "%category%",
+        "command": "tunnel-forwarding.showLog",
+        "title": "%command.showLog%",
+        "enablement": "tunnelForwardingHasLog"
+      },
+      {
+        "category": "%category%",
+        "command": "tunnel-forwarding.restart",
+        "title": "%command.restart%",
+        "enablement": "tunnelForwardingIsRunning"
+      }
+    ]
+  },
+  "main": "./dist/extension",
+  "prettier": {
+    "printWidth": 100,
+    "trailingComma": "all",
+    "singleQuote": true,
+    "arrowParens": "avoid"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/eclipse-theia/vscode-builtin-extensions"
+  },
+  "keywords": [
+    "Built-in"
+  ],
+  "scripts": {}
+}

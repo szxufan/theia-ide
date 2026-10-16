@@ -8,3 +8,9 @@
 .nx
 **/node_modules
 **/lib
+
+# The committed plugins/ directory ships inside the image (offline plugin
+# seeding for download:plugins). Its lib/node_modules subdirectories are part
+# of the plugins themselves and must not be stripped by the rules above
+# (e.g. vscjava.vscode-gradle/extension/lib jars).
+!plugins/**

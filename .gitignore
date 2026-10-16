@@ -5,7 +5,6 @@
 **/lib
 **/src-gen
 **/gen-esbuild.*.mjs
-**/plugins
 **/tsconfig.tsbuildinfo
 *.log
 license-check-summary.txt*
@@ -15,3 +14,11 @@ license-check-summary.txt*
 
 .trae
 .zcode
+
+# 插件目录提交进仓库，供 browser.Dockerfile 离线构建使用。
+# 反转上方针对构建产物的忽略规则（**/lib、**/dist、**/node_modules 等），
+# 保证插件解包后的完整内容入库。
+!plugins/**
+# 例外：redhat.java 内嵌平台专属 JRE（本地 Windows 下载为 win32-x86_64 版本），
+# 必须由构建环境按目标平台（linux-x64）自行下载，不能入库。
+plugins/redhat.java/

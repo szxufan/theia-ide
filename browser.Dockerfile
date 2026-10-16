@@ -12,7 +12,14 @@ COPY . .
 # Build with pnpm: the root postinstall compiles the theia framework submodule
 # and links it via workspace:* dependencies, so the image contains the
 # framework modifications. Reproducible via the committed pnpm-lock.yaml.
-RUN npm install -g pnpm@9 && \
+# Registry is switched to npmmirror (China mirror): it covers the root pnpm
+# install, the `npm install -g pnpm` itself, and the theia submodule's `npm ci`
+# (all inherit the same ~/.npmrc; npm rewrites registry.npmjs.org URLs in its
+# lockfile to the configured host). The committed plugins/ directory pre-seeds
+# most plugins: download:plugins skips them and only fetches platform-specific
+# ones (e.g. redhat.java for linux-x64) plus a few open-vsx metadata lookups.
+RUN npm config set registry https://registry.npmmirror.com && \
+    npm install -g pnpm@9 && \
     pnpm config set network-timeout 600000 && \
     pnpm install --frozen-lockfile && \
     pnpm build:extensions && \

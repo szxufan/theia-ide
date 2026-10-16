@@ -71,6 +71,8 @@ pnpm theia:update                                # 子模块更新到远端跟�
 
 根 `package.json` 的 `theiaPlugins` 字段声明要内置的 VS Code 插件（URL → vsix），`pnpm download:plugins` 下载到 `plugins/` 目录，打包时随应用分发。`theiaPluginsExcludeIds` 声明要从 builtin 包中排除的插件。当前内置插件包括 vscode-builtin-extensions、Java 扩展包与简体中文语言包。
 
+`plugins/` 目录**已提交进仓库**（约 280MB，见 `.gitignore` 中的 `!plugins/**` 反向规则），供 `browser.Dockerfile` 离线构建：镜像构建时 `download:plugins` 会跳过已存在的插件，只需做少量 open-vsx 元数据查询并下载平台专属插件。唯一例外是 **`redhat.java`**——它内嵌平台专属 JRE（Windows 本地下载的是 win32-x86_64 版本，Linux 镜像需要 linux-x64 版本），因此被 `.gitignore` 排除、不入库，由镜像构建时按目标平台自行下载。更新 `theiaPlugins` 后，需在本地重新运行 `pnpm download:plugins` 并把 `plugins/` 的变化一并提交。
+
 ## theia 子模块（fork）自定义点
 
 fork（szxufan/theia）相对上游的定制，详见 [docs/developing-with-local-theia.md](docs/developing-with-local-theia.md) 的「子模块中的 Fork 自定义」一节：

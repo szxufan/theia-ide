@@ -1,0 +1,51 @@
+{
+  "name": "dotenv",
+  "displayName": "Dotenv Language Basics (built-in)",
+  "description": "Provides syntax highlighting and bracket matching in dotenv files.",
+  "version": "1.108.2",
+  "publisher": "vscode",
+  "license": "SEE LICENSE IN LICENSE-vscode.txt",
+  "engines": {
+    "vscode": "*"
+  },
+  "scripts": {},
+  "categories": [
+    "Programming Languages"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "dotenv",
+        "extensions": [
+          ".env"
+        ],
+        "filenames": [
+          ".env",
+          ".flaskenv",
+          "user-dirs.dirs"
+        ],
+        "filenamePatterns": [
+          ".env.*"
+        ],
+        "aliases": [
+          "Dotenv"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "dotenv",
+        "scopeName": "source.dotenv",
+        "path": "./syntaxes/dotenv.tmLanguage.json"
+      }
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/eclipse-theia/vscode-builtin-extensions"
+  },
+  "keywords": [
+    "Built-in"
+  ]
+}

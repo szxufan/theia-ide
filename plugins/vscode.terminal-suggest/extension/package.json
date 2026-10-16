@@ -1,0 +1,47 @@
+{
+  "name": "terminal-suggest",
+  "publisher": "vscode",
+  "displayName": "Terminal Suggest for VS Code (built-in)",
+  "description": "Extension to add terminal completions for zsh, bash, and fish terminals.",
+  "version": "1.108.2",
+  "private": true,
+  "license": "SEE LICENSE IN LICENSE-vscode.txt",
+  "engines": {
+    "vscode": "^1.95.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "enabledApiProposals": [
+    "terminalCompletionProvider",
+    "terminalShellEnv"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "terminal.integrated.suggest.clearCachedGlobals",
+        "category": "Terminal",
+        "title": "%terminal.integrated.suggest.clearCachedGlobals%"
+      }
+    ],
+    "terminal": {
+      "completionProviders": [
+        {
+          "description": "Show suggestions for commands, arguments, flags, and file paths based upon the Fig spec."
+        }
+      ]
+    }
+  },
+  "main": "./dist/terminalSuggestMain",
+  "activationEvents": [
+    "onTerminalShellIntegration:*"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/eclipse-theia/vscode-builtin-extensions"
+  },
+  "keywords": [
+    "Built-in"
+  ],
+  "scripts": {}
+}
