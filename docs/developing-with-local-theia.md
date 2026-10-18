@@ -295,6 +295,14 @@ cd theia && npm run compile
 cd .. && pnpm build:local-theia --skip-theia-build --skip-plugins
 ```
 
+以上常用路径已封装为根 `package.json` 的快捷命令（详见 AGENTS.md「常用命令」）：
+
+```sh
+pnpm theia:compile <pkg>   # 增量编译子模块中的某个包（如 ai-editor），等价于 cd theia && npx tsc -b packages/<pkg>
+pnpm build:quick <pkg>     # 编译该包后跳过 theia 重编重建应用（theia:compile + build:fast 一步完成）
+pnpm build:fast            # theia 已编译时仅重建扩展与应用（跳过插件下载）
+```
+
 ### 构建并打包
 
 要创建可分发的应用：

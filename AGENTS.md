@@ -37,9 +37,14 @@ git submodule update --init --recursive theia   # 或 pnpm theia:init
 pnpm install                                     # 含 postinstall：patch + 链接本地 theia
 
 # 构建（基于本地 theia 子模块，推荐）
-pnpm build:dev                                   # 开发构建（stable 应用）
+pnpm build:dev                                   # 开发构建（stable 应用，全量约 15-20 分钟）
 pnpm build                                       # 生产构建（stable 应用）
 pnpm build:local-theia --prod --package          # 生产构建 + 打包安装包
+
+# 单包改动的快速路径（改了 theia 子模块某个包后，避免全量重编）
+pnpm theia:compile <pkg>                         # 仅增量编译子模块中的包，如 pnpm theia:compile ai-editor
+pnpm build:quick <pkg>                           # 编译该包 + 跳过 theia 重编重建应用（推荐日常迭代）
+pnpm build:fast                                  # theia 已全部编译时仅重建扩展与应用
 
 # 仅重建 / 运行某个应用
 pnpm browser build:prod                          # 重建浏览器应用
