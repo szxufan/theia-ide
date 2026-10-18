@@ -487,10 +487,22 @@ cd .. && pnpm build:local-theia --skip-theia-build --skip-plugins
 
 ### ffmpeg 原生模块构建失败（MSB8020：找不到 ClangCL）
 
-`pnpm install` 触发 `theia/dev-packages/ffmpeg` 的 node-gyp 重建时，可能生成
-ClangCL 平台工具集工程；未安装该 VS 组件的机器会报 MSB8020。本仓库已把该包的
-install 脚本改为 no-op（见子模块提交记录），如需重建原生二进制（仅
-`@theia/cli` 的 electron 编解码器检查使用），用 v143 工具集手工构建：
+`pnpm install` 触发 `theia/dev-packages/ffmpeg` 的 node-gyp 重建时，会生成 ClangCL
+平台工具集工程（node-gyp v10 在 Windows 上的默认）；未安装对应 VS 组件的机器会报
+MSB8020。**推荐修复**：用 Visual Studio Installer 安装单个组件
+「适用于 Windows 的 C++ Clang 工具」（C++ Clang tools for Windows，
+组件 ID `Microsoft.VisualStudio.Component.VC.Llvm.ClangToolset`；注意不是仅装
+「C++ Clang 编译器」——那是 clang-cl 本体，MSBuild 工具集仍会缺失）。命令行等价：
+
+```sh
+"C:\Program Files (x86)\Microsoft Visual Studio\Installer\vs_installer.exe" modify ^
+  --installPath "C:\Program Files\Microsoft Visual Studio\2022\Community" ^
+  --add Microsoft.VisualStudio.Component.VC.Llvm.ClangToolset --passive --norestart
+```
+
+装好后删除 `theia/dev-packages/ffmpeg/build` 并重新 `pnpm install` 即可自动重建。
+临时备选（无法装组件时）：把生成的 vcxproj 工具集改为 v143 手工构建——源码为纯 C，
+不依赖 clang：
 
 ```sh
 cd theia/dev-packages/ffmpeg
