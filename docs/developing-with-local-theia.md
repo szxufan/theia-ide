@@ -196,12 +196,18 @@ pnpm theia:update           # git submodule update --remote theia
   - **AI 代码审查**（ai-ide）：`GetGitChangesTool.getWorkingTreeChanges`（`git diff
     HEAD`）+ 「变更审查」agent（中文评审提示词、只读工具）+ 命令
     「AI 代码审查：审查未提交变更」一键发起（diff 超 100K 截断注明，未跟踪文件不在范围）。
+  - **选中代码添加到聊天**（ai-editor）：编辑器右键菜单「将选中代码添加到聊天」
+    （`ai-editor.addSelectionToChat`，启用 AI 后显示）——把点击时刻的选区以
+    「引用 文件 第 a-b 行 + 语言围栏代码块」快照插入主聊天输入框光标处
+    （轮询等待输入框 Monaco 挂载，最长 2s），可继续编辑后发送；
+    与「Ask AI」（内联输入框、立即发送）互补并存。
 
   各项的回归测试与实现同目录（如 `session-rollback-service.spec.ts`、
   `tool-call-group.spec.tsx`、`workspace-chat-variable-contribution.spec.ts`、
   `ai-chat-task-providers.spec.ts`、`shell-task-provider.spec.ts`、
   `doc-set-service.spec.ts`、`ai-preview-widget.spec.tsx`、
-  `working-changes-review-command-contribution.spec.ts`）。
+  `working-changes-review-command-contribution.spec.ts`、
+  `add-selection-to-chat-contribution.spec.ts`）。
 
 ## 重要说明
 
