@@ -170,6 +170,38 @@ pnpm theia:update           # git submodule update --remote theia
   `chat-service-queue.spec.ts`、`tool-call-hook.spec.ts`、
   `auto-memory-service.spec.ts`、`chat-crash-recovery.spec.ts`、
   `workspace-instructions-variable-contribution.spec.ts`）。
+- **交互增强（借鉴 Trae IDE 的七项）**：
+  - **快照回滚**（ai-chat/ai-chat-ui）：`SessionRollbackService` 按请求汇总变更集
+    元素（同文件取最早修改前内容，add 型删除文件），响应节点工具栏的
+    「回滚到此轮修改之前」一键恢复；文件变更工具创建元素时显式透传
+    `originalState`，重载后仍可回滚。仅覆盖 AI 文件工具的变更，shell 直接改盘不在此列。
+  - **工具调用折叠**（ai-chat-ui/ai-core）：回复中连续 ≥2 次已完成的工具调用折叠为
+    单行摘要（如「已执行 3 次工具调用 · writeFileContent、shellExecute ×2 · 拒绝 1」），
+    进行中的调用保持展开；偏好 `ai-features.chat.collapseToolCalls`（默认开）。
+  - **`#` 上下文增强**（ai-chat）：新增 `#workspace`（工作区两级目录树）与
+    `#folder:<路径>`（文件夹三级目录树）上下文变量，均带参数选择器与内联补全，
+    目录条目上限 500 截断；`#file:` 补全把当前打开的编辑器文件排到最前。
+  - **AI 任务面板**（ai-chat-ui/ai-chat/ai-terminal）：`AiTaskProvider` 贡献点聚合
+    后台委派、排队消息与后台命令三类任务，底部「AI 任务」视图分组展示（状态、
+    查看输出、停止），每 5s 轮询拉取型数据源；`ShellExecutionServer.listTasks()`
+    附带命令行，后台命令输出中检测到 `http://localhost:<端口>` 时提供「打开预览」。
+  - **文档集 #Docs**（ai-web）：`DocSetService` 把 URL（抓取转 Markdown）或本地文件
+    沉淀为工作区级参考文档（单篇 64K、总量 256K 上限），命令「AI 文档集：添加/管理」；
+    `#docs` 变量附加清单或全文；`doc-set` 能力片段（`{{docSet}}`，无文档时为空）
+    在 Universal/Coder 提示词中默认启用。
+  - **实时预览**（ai-ide）：`AiPreviewWidget`（地址栏 + iframe）内嵌开发服务器页面，
+    支持「自动刷新」（文件变化 800ms 防抖重载）；命令 `ai-ide.openPreview`（可带 url），
+    任务面板的「打开预览」经此调起。已知限制：预览目标不得设置
+    `X-Frame-Options`/`frame-ancestors`（常见 dev server 默认满足）。
+  - **AI 代码审查**（ai-ide）：`GetGitChangesTool.getWorkingTreeChanges`（`git diff
+    HEAD`）+ 「变更审查」agent（中文评审提示词、只读工具）+ 命令
+    「AI 代码审查：审查未提交变更」一键发起（diff 超 100K 截断注明，未跟踪文件不在范围）。
+
+  各项的回归测试与实现同目录（如 `session-rollback-service.spec.ts`、
+  `tool-call-group.spec.tsx`、`workspace-chat-variable-contribution.spec.ts`、
+  `ai-chat-task-providers.spec.ts`、`shell-task-provider.spec.ts`、
+  `doc-set-service.spec.ts`、`ai-preview-widget.spec.tsx`、
+  `working-changes-review-command-contribution.spec.ts`）。
 
 ## 重要说明
 
@@ -437,6 +469,19 @@ pnpm build:dev
 # 或者如果只有 Theia 软件包发生了变更
 cd theia && git clean -xfd && npm ci && npm run compile
 cd .. && pnpm build:local-theia --skip-theia-build --skip-plugins
+```
+
+### ffmpeg 原生模块构建失败（MSB8020：找不到 ClangCL）
+
+`pnpm install` 触发 `theia/dev-packages/ffmpeg` 的 node-gyp 重建时，可能生成
+ClangCL 平台工具集工程；未安装该 VS 组件的机器会报 MSB8020。本仓库已把该包的
+install 脚本改为 no-op（见子模块提交记录），如需重建原生二进制（仅
+`@theia/cli` 的 electron 编解码器检查使用），用 v143 工具集手工构建：
+
+```sh
+cd theia/dev-packages/ffmpeg
+sed -i 's|<PlatformToolset>ClangCL</PlatformToolset>|<PlatformToolset>v143</PlatformToolset>|' build/ffmpeg.vcxproj
+"C:/Program Files/Microsoft Visual Studio/2022/Community/MSBuild/Current/Bin/MSBuild.exe" build/ffmpeg.vcxproj -p:Configuration=Release -p:Platform=x64
 ```
 
 ### 恢复干净状态
