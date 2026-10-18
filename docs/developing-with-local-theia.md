@@ -133,6 +133,43 @@ pnpm theia:update           # git submodule update --remote theia
   - `@tag:` 词项会在分词前被剥离，且不会留下多余的空白。
 
   回归测试位于 `preference-tree-model.spec.ts`（"search matching"）。
+- **AI 能力补齐（对照 ZCode / opencode 的十项差距）**：
+  - **AGENTS.md 自动注入**（ai-ide）：`WorkspaceInstructionsVariableContribution`
+    发现工作区根的 `AGENTS.md`/`AGENT.md`/`CLAUDE.md`（每根取最高优先级一个，
+    32KB 截断，文件变更自动失效缓存），经 `workspace-instructions` 内置提示词
+    片段注入 Coder/Universal/Architect 系统提示词（默认开启、可经能力开关关闭）。
+  - **通用 Web 工具**（新包 `@theia/ai-web`）：模型无关的 `webFetch`（HTML→Markdown）
+    与 `webSearch`（DuckDuckGo 免密钥默认，可配 Brave/SearXNG）；后端经
+    `RequestService` 出网（遵循 `http.proxy`），前端工具带确认门槛；
+    `web-access` 能力片段默认注入 Coder 代理模式与通用代理。
+  - **会话级自主模式**（ai-chat/ai-chat-ui）：`CommonChatSessionSettings.autonomyMode`
+    支持 `plan`（拒绝写工具并回传中文原因）与 `yolo`（自动放行确认，`confirmAlwaysAllow`
+    工具除外），在会话设置对话框中选择，`AutonomyModeChatBanner` 横幅常显。
+  - **客户端上下文压缩**（ai-chat）：`ClientCompactionService` 在估算上下文超过模型
+    `maxInputTokens` 的阈值（默认 80%）时，用 `default/summarize` 别名模型把较早轮次
+    压缩为摘要；压缩记录（`ClientCompactionRecord`）随会话持久化，`getMessages` 用
+    摘要替换旧消息（UI 完整历史保留）。OpenAI/Anthropic 的服务端压缩启用时自动让位。
+  - **消息排队**（ai-chat）：请求进行中再次提交不再取消当前请求，而是进入会话级
+    FIFO 队列（上限 10 条），完成后自动按序发送；输入框上方渲染「已排队」气泡并可取消。
+  - **Shell 后台任务**（ai-terminal）：`shellExecuteBackground` 工具（start/status/
+    read/stop），输出按偏移增量读取；复用 ShellCommandPermissionService 的确认策略。
+  - **后台代理委派**（ai-chat）：`delegateToAgent` 新增 `background` 参数，立即返回
+    taskId；`getDelegationResult`/`stopDelegation` 轮询与停止；完成时向父会话注入
+    信息性通知。
+  - **工具调用 Hook**（ai-core）：`ToolCallHook` 贡献点（`beforeToolCall` 可拒绝并回传
+    原因、`afterToolCall`）插入 `ToolCallExecutorImpl` 执行链；`ToolCallEventBus`
+    广播每次调用前后事件（供外部 API/遥测消费）。
+  - **自动记忆**（ai-ide，默认关闭）：`AutoMemoryService` 在会话空闲后用摘要模型提取
+    值得长期记住的事实，哈希去重后写入记忆目录 `wiki/自动记忆.md` 并链接到
+    `wiki/index.md`；偏好 `ai-features.autoMemory.enabled` 开启。
+  - **崩溃恢复**（ai-chat）：保存时若仍有进行中的请求，会话元数据记 `hasInterrupted`；
+    恢复时为这些响应追加「会话在此处被中断……编辑并重新发送即可重试」信息标记，
+    保留已收到的部分内容。
+
+  各项的回归测试与实现同目录（如 `client-compaction.spec.ts`、
+  `chat-service-queue.spec.ts`、`tool-call-hook.spec.ts`、
+  `auto-memory-service.spec.ts`、`chat-crash-recovery.spec.ts`、
+  `workspace-instructions-variable-contribution.spec.ts`）。
 
 ## 重要说明
 

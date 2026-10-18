@@ -71,6 +71,7 @@
     "@theia/ai-registry": "workspace:*",
     "@theia/ai-scanoss": "workspace:*",
     "@theia/ai-terminal": "workspace:*",
+    "@theia/ai-web": "workspace:*",
     "@theia/bulk-edit": "workspace:*",
     "@theia/callhierarchy": "workspace:*",
     "@theia/collaboration": "workspace:*",
