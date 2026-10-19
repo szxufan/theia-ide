@@ -201,6 +201,16 @@ pnpm theia:update           # git submodule update --remote theia
     「引用 文件 第 a-b 行 + 语言围栏代码块」快照插入主聊天输入框光标处
     （轮询等待输入框 Monaco 挂载，最长 2s），可继续编辑后发送；
     与「Ask AI」（内联输入框、立即发送）互补并存。
+  - **工具注册表惰性注册**（ai-core，`tool-invocation-registry.ts`）：
+    `ToolInvocationRegistryImpl` 不再在 `@postConstruct` 中急切解析全部
+    `ToolProvider` 贡献，改为首次访问（`getAllFunctions`/`getFunction`/
+    `getFunctions`/`unregister*`）时一次性注册。原因：`StopDelegationTool` 等
+    依赖 `ChatService` 的工具会与 `PromptServiceImpl → ToolInvocationRegistry`
+    构成构造期循环依赖，inversify 无限递归直至 `RangeError: Maximum call stack
+    size exceeded`，前端表现为启动卡死白屏（登录后白屏的根因）。惰性注册后
+    任何工具注入 ChatService 一族服务均安全；初始注册不触发 `onDidChange`
+    （与原构造期注册的可见行为一致）。回归测试：
+    `tool-invocation-registry.spec.ts`。
 
   各项的回归测试与实现同目录（如 `session-rollback-service.spec.ts`、
   `tool-call-group.spec.tsx`、`workspace-chat-variable-contribution.spec.ts`、
