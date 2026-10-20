@@ -169,6 +169,7 @@
     "clean:dist": "rimraf dist .stage",
     "build": "pnpm rebuild && theia build --app-target=\"electron\" --mode development",
     "build:prod": "pnpm rebuild && theia build --app-target=\"electron\"",
+    "build:quick": "theia build --app-target=\"electron\" --mode development",
     "rebuild": "theia rebuild:electron --cacheRoot ../.. && node ../../node_modules/electron/install.js",
     "watch": "concurrently -n compile,build \"theiaext watch --preserveWatchOutput\" \"theia build --watch --mode development\"",
     "start": "electron scripts/theia-electron-main.js --plugins=local-dir:../../plugins",

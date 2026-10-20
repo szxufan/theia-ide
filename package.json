@@ -47,6 +47,7 @@
     "build:npm:dev": "pnpm build:extensions && pnpm build:applications:dev",
     "build:applications": "lerna run --scope=\"theia-ide*app\" --ignore=\"theia-ide-next*\" build:prod --concurrency 1",
     "build:applications:dev": "lerna run --scope=\"theia-ide*app\" --ignore=\"theia-ide-next*\" build --concurrency 1",
+    "build:applications:quick": "lerna run --scope=\"theia-ide*app\" --ignore=\"theia-ide-next*\" build:quick --concurrency 1",
     "build:applications:next": "lerna run --scope=\"theia-ide-next*\" build:prod --concurrency 1",
     "build:applications:next:dev": "lerna run --scope=\"theia-ide-next*\" build --concurrency 1",
     "build:extensions": "lerna run --scope=\"theia-ide*ext\" build",

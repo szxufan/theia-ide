@@ -151,8 +151,22 @@ pnpm theia:update           # git submodule update --remote theia
     摘要替换旧消息（UI 完整历史保留）。OpenAI/Anthropic 的服务端压缩启用时自动让位。
   - **消息排队**（ai-chat）：请求进行中再次提交不再取消当前请求，而是进入会话级
     FIFO 队列（上限 10 条），完成后自动按序发送；输入框上方渲染「已排队」气泡并可取消。
-  - **Shell 后台任务**（ai-terminal）：`shellExecuteBackground` 工具（start/status/
-    read/stop），输出按偏移增量读取；复用 ShellCommandPermissionService 的确认策略。
+  - **Shell 后台任务与原生输出读取**（ai-terminal）：`shellExecuteBackground` 工具
+    （start/status/read/stop），`read` 支持偏移增量轮询与行模式（filter/head/tail/
+    fromLine-toLine/maxLines/stream）；`shellExecute` 改为 action 式（execute/read），
+    `execute` 返回 `resultId`（最近 10 次执行保留输出，stdout/stderr 各 1MB），
+    `read` 按行寻址多次读取片段；两者共用 ShellCommandPermissionService 确认策略，
+    read 不执行任何东西、自动放行（计划模式允许 read、拦截 execute/start，见
+    ai-chat `isMutatingToolCall`）；提示词引导 AI 优先用原生读取选项而非
+    grep/head/tail 管道。
+  - **AI 命令审查**（ai-terminal/ai-chat/ai-chat-ui）：内置非聊天代理
+    「命令审查」（`Command Review`，purpose `command-review`，可配置模型）在 shell
+    命令等待确认时做安全审查；ai-chat 新增 `ToolCallReviewer` 贡献点，
+    `FrontendChatToolRequestService` 在确认等待期调用（限时 30s，不挤占确认超时）。
+    safe 判定 + 无静态危险模式 + `ai-features.terminal.aiCommandReview.autoApprove`
+    （默认开）三重守卫全过才自动放行；否则经 `updateResult({aiReview})` 在专用与
+    通用确认卡上展示中文「命令作用/风险点」。偏好 `aiCommandReview.enabled`
+    控制总开关。
   - **后台代理委派**（ai-chat）：`delegateToAgent` 新增 `background` 参数，立即返回
     taskId；`getDelegationResult`/`stopDelegation` 轮询与停止；完成时向父会话注入
     信息性通知。
@@ -309,9 +323,17 @@ cd .. && pnpm build:local-theia --skip-theia-build --skip-plugins
 
 ```sh
 pnpm theia:compile <pkg>   # 增量编译子模块中的某个包（如 ai-editor），等价于 cd theia && npx tsc -b packages/<pkg>
-pnpm build:quick <pkg>     # 编译该包后跳过 theia 重编重建应用（theia:compile + build:fast 一步完成）
-pnpm build:fast            # theia 已编译时仅重建扩展与应用（跳过插件下载）
+pnpm build:quick <pkg>     # 编译该包后重建扩展与应用；跳过 theia 重编、pnpm install、插件下载
+                           # 与原生模块重建（pnpm rebuild），只改源码时数分钟内完成
+pnpm build:fast            # theia 已编译时重建扩展与应用（跳过插件下载；仍含 install 与原生重建）
 ```
+
+`build:quick` 的快速路径有两个前提：一是此前至少跑过一次完整构建
+（`pnpm build:dev`，它建立 node_modules、@theia/* 链接与原生模块基线；
+`--skip-install` 检测到 `node_modules/@theia/core` 缺失时会报错提示），
+二是依赖未变化——改了根/应用 `package.json` 或升级 theia 子模块依赖后，
+请改走 `build:fast` 或完整 `build:dev`（原生模块按 Electron ABI 重编译主要发生
+在这两条路径；Windows 上该步骤耗时可达小时级，这正是 `build:quick` 跳过它的原因）。
 
 ### 构建并打包
 

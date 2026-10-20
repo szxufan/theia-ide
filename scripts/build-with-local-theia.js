@@ -57,6 +57,8 @@ const options = {
     skipTheiaBuild: args.includes('--skip-theia-build'),
     skipIdeBuild: args.includes('--skip-ide-build'),
     skipPlugins: args.includes('--skip-plugins'),
+    skipInstall: args.includes('--skip-install'),
+    quickApps: args.includes('--quick-apps'),
     package: args.includes('--package'),
     postinstall: args.includes('--postinstall'),
     unlink: args.includes('--unlink'),
@@ -408,9 +410,17 @@ function unlinkTheiaPackages() {
 }
 
 /**
- * The lerna build command for the selected application target.
+ * The lerna build command for the selected application target. --quick-apps uses the
+ * applications' `build:quick` scripts, which skip `pnpm rebuild` (native module
+ * recompilation) — correct whenever only source code changed, see buildIde().
  */
 function applicationBuildCommand() {
+    if (options.quickApps) {
+        if (options.apps === 'next') {
+            throw new Error('--quick-apps is only supported for --apps stable (electron-next has no build:quick script)');
+        }
+        return 'pnpm build:applications:quick';
+    }
     const mode = options.prod ? 'prod' : 'dev';
     const commands = {
         stable: { prod: 'pnpm build:applications', dev: 'pnpm build:applications:dev' },
@@ -498,18 +508,36 @@ function checkVersionAlignment() {
  * Build IDE
  */
 function buildIde() {
-    // Remove symlinks left by a previous run first: pnpm install fails on a
-    // symlinked @theia package (EEXIST creating its nested node_modules).
-    removeTheiaSymlinks();
-    // Install: pnpm install replaces node_modules/@theia/* with the registry
-    // versions, so the local packages must be linked afterwards.
-    runPnpmInstall('Install IDE dependencies');
-    linkTheiaPackages();
-    // sync must run after install+link so the missing transitives are present
-    // in theia-ide/node_modules to copy from
-    syncMissingFrameworkDeps();
+    if (options.skipInstall) {
+        // Quick iteration path: node_modules is assumed intact and linked from a previous
+        // full build. Verify the @theia/* links point at the local checkout, then only
+        // refresh them (cheap) so the requested --theia-path is honored.
+        const coreLink = idePackagePath('@theia/core');
+        if (!fs.existsSync(coreLink)) {
+            console.error('\nError: --skip-install requires an existing install (node_modules/@theia/core missing).');
+            console.error('Run a full build (pnpm build:dev) once, or drop --skip-install.');
+            process.exit(1);
+        }
+        console.log('\nSkipping pnpm install (--skip-install): refreshing @theia/* links only');
+        linkTheiaPackages();
+        // syncMissingFrameworkDeps patches a dependency gap that only a fresh
+        // `pnpm install` can create; without an install the previous sync is still
+        // valid, and rescanning the whole node_modules tree costs many minutes on
+        // Windows — so skip it here.
+    } else {
+        // Remove symlinks left by a previous run first: pnpm install fails on a
+        // symlinked @theia package (EEXIST creating its nested node_modules).
+        removeTheiaSymlinks();
+        // Install: pnpm install replaces node_modules/@theia/* with the registry
+        // versions, so the local packages must be linked afterwards.
+        runPnpmInstall('Install IDE dependencies');
+        linkTheiaPackages();
+        // sync must run after install+link so the missing transitives are present
+        // in theia-ide/node_modules to copy from
+        syncMissingFrameworkDeps();
+    }
     run('pnpm build:extensions', ROOT_DIR, 'Build IDE extensions');
-    run(applicationBuildCommand(), ROOT_DIR, `Build IDE applications (${options.apps}, ${options.prod ? 'prod' : 'dev'})`);
+    run(applicationBuildCommand(), ROOT_DIR, `Build IDE applications (${options.apps}, ${options.prod ? 'prod' : 'dev'}${options.quickApps ? ', quick: no native rebuild' : ''})`);
     if (!options.skipPlugins) {
         run('pnpm download:plugins', ROOT_DIR, 'Download plugins');
     } else {

@@ -59,8 +59,9 @@ if (targets.length > 0) {
 }
 
 if (rebuildApps) {
-    console.log('[compile-theia] 增量重建扩展与应用（跳过 theia 重编与插件下载）');
-    const result = spawnSync(`node "${path.join(__dirname, 'build-with-local-theia.js')}" --skip-theia-build --skip-plugins`, {
+    console.log('[compile-theia] 增量重建扩展与应用（跳过 theia 重编、pnpm install 与原生模块重建）');
+    const result = spawnSync(
+        `node "${path.join(__dirname, 'build-with-local-theia.js')}" --skip-theia-build --skip-plugins --skip-install --quick-apps`, {
         cwd: repoRoot,
         stdio: 'inherit',
         shell: true

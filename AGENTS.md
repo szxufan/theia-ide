@@ -43,8 +43,9 @@ pnpm build:local-theia --prod --package          # 生产构建 + 打包安装�
 
 # 单包改动的快速路径（改了 theia 子模块某个包后，避免全量重编）
 pnpm theia:compile <pkg>                         # 仅增量编译子模块中的包，如 pnpm theia:compile ai-editor
-pnpm build:quick <pkg>                           # 编译该包 + 跳过 theia 重编重建应用（推荐日常迭代）
-pnpm build:fast                                  # theia 已全部编译时仅重建扩展与应用
+pnpm build:quick <pkg>                           # 编译该包 + 重建扩展与应用；跳过 install 与原生模块重建（推荐日常迭代，
+                                                 #   需先跑过一次 build:dev 建立基线；依赖变化后请走 build:fast/build:dev）
+pnpm build:fast                                  # theia 已全部编译时仅重建扩展与应用（含 install 与原生重建）
 
 # 仅重建 / 运行某个应用
 pnpm browser build:prod                          # 重建浏览器应用
@@ -95,6 +96,15 @@ fork（szxufan/theia）相对上游的定制，详见 [docs/developing-with-loca
    - 前端 preload 对 `loadLocalization` 增加 10s 超时，避免白屏。
    - 后端 `packages/plugin-ext/src/hosted/node/hosted-plugin-localization-service.ts` 的缓存目录清理失败（如被运行中的实例锁定导致 EPERM）时降级到进程级临时目录，且保证 `ready` 永远 resolve，不阻塞插件部署。
    - 回归测试：同目录下的 `*.spec.ts`（`hosted-plugin-localization-service.spec.ts`、`i18n-preload-contribution.spec.ts`）。
+3. **AI 聊天权限模式系统（参考 ZCode 重做）**：
+   - 会话级状态 `permissionMode`（`confirm` 变更前确认 / `autonomous` 自主模式 / `full` 完全访问）+ 正交的 `planMode` 布尔（计划模式），存于 `CommonChatSessionSettings`（`ai-chat/src/common/chat-model.ts`）；旧 `autonomyMode` 已废弃，由 `resolvePermissionSettings()` 读取时迁移。
+   - 单点闸门 `resolvePermissionConfirmationMode()`（`ai-chat/src/common/chat-permission.ts`）：`DISABLED` 偏好永远优先；计划模式拒绝修改性调用（按 shell action 区分读写）；confirm 对修改性工具强制弹卡；autonomous 自动放行但 shell（`confirmAlwaysAllow`）保持确认并交给 AI 审查；full 全放行。执行点在 `ai-chat/src/browser/chat-tool-request-service.ts`。
+   - AI 命令审查（`ai-terminal` 的 `ShellCommandReviewer`）自动放行**仅在 autonomous 模式**生效（`safe+autoApprove` 直接确认）；confirm 模式下审查结果只标注到卡片，必须用户点击；full 模式不产生确认与审查。
+   - Coder 代理使用单一系统提示词（无模式变体），按会话权限模式注入一句模式指令（`ai-ide/src/browser/coder-agent.ts` 的 `getPermissionModePromptInstruction`）；原「编辑模式/代理模式（下一代）」提示词变体与 `AbstractModeAwareChatAgent` 的 Coder 侧用法已删除（该基类仍供 Architect 使用）。
+   - 能力条（CapabilitiesBar）与模式解耦：能力集取自代理全部提示词变体的并集（`ai-chat-ui/src/browser/chat-capabilities-service.ts`），模式切换不再触发能力重算；禁用能力=不注册工具，权限模式=执行时闸门。
+   - UI：聊天输入栏 `ChatPermissionModeSelector`（计划复选框+三个单选，完全访问橙色警示）；`ctrl+m` 循环三个主模式；完全访问首次切换弹一次性确认（`FullAccessConfirmationService`，偏好 `ai-features.chat.fullAccessAcknowledged`）；横幅 `PermissionModeChatBanner` 显示计划/完全访问状态。
+   - 子代理委派继承父会话的权限设置（`ai-chat/src/browser/agent-delegation-tool.ts`）。
+   - 回归测试：`ai-chat/src/common/chat-permission.spec.ts`、`ai-chat/src/browser/chat-tool-request-service-review.spec.ts`。
 
 修改子模块代码后，需在 `theia/` 目录内重新编译对应包（如在 theia 根目录 `npx tsc -b packages/core`），再重建应用。
 
