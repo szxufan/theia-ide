@@ -92,6 +92,14 @@ pnpm theia:update           # git submodule update --remote theia
       `getNlsConfig` 只要存在翻译配置就会下发给插件进程。
     - 源码中所有面向用户的字符串（约 500+ 文件）已直接翻译为中文，
       `nls.zh-cn.json` 与 zh-cn 语言包仅作为兜底。
+    - AI 配置视图（AI 设置）的偏好行标题已全部中文化：各 AI 包偏好 schema
+      （`ai-features.*`）的属性均声明各自的中文 `title`（设置行服务
+      `AiSettingsRowService.describe()` 优先取具体标题，不再回退到从
+      preference id 生成的英文标签）；常规页 catch-all 分区标题由
+      `GeneralConfigurationCategory.segmentLabel()` 的中文映射表提供
+      （未知 segment 回退 Title Case 英文）。服务端压缩等用户可见枚举值
+      通过 `enumItemLabels` 显示中文（存储值保持英文不变）；
+      `packages/core` 的 `LINUX_ENV_HINT` 提示也已汉化。
     - AI 聊天代理的中文显示名：`Agent` 接口（`packages/ai-core/src/common/agent.ts`）
       新增可选 `displayName` 字段，`packages/ai-chat/src/common/chat-agents.ts`
       提供 `getAgentDisplayName()` 辅助函数（未设置时回退 `name`）。
