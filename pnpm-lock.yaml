@@ -81,15 +81,9 @@ importers:
       '@theia/ai-chatgpt':
         specifier: workspace:*
         version: link:../../theia/packages/ai-chatgpt
-      '@theia/ai-claude-code':
-        specifier: workspace:*
-        version: link:../../theia/packages/ai-claude-code
       '@theia/ai-code-completion':
         specifier: workspace:*
         version: link:../../theia/packages/ai-code-completion
-      '@theia/ai-codex':
-        specifier: workspace:*
-        version: link:../../theia/packages/ai-codex
       '@theia/ai-copilot':
         specifier: workspace:*
         version: link:../../theia/packages/ai-copilot
@@ -325,15 +319,9 @@ importers:
       '@theia/ai-chatgpt':
         specifier: workspace:*
         version: link:../../theia/packages/ai-chatgpt
-      '@theia/ai-claude-code':
-        specifier: workspace:*
-        version: link:../../theia/packages/ai-claude-code
       '@theia/ai-code-completion':
         specifier: workspace:*
         version: link:../../theia/packages/ai-code-completion
-      '@theia/ai-codex':
-        specifier: workspace:*
-        version: link:../../theia/packages/ai-codex
       '@theia/ai-copilot':
         specifier: workspace:*
         version: link:../../theia/packages/ai-copilot
@@ -650,15 +638,9 @@ importers:
       '@theia/ai-chatgpt':
         specifier: workspace:*
         version: link:../../theia/packages/ai-chatgpt
-      '@theia/ai-claude-code':
-        specifier: workspace:*
-        version: link:../../theia/packages/ai-claude-code
       '@theia/ai-code-completion':
         specifier: workspace:*
         version: link:../../theia/packages/ai-code-completion
-      '@theia/ai-codex':
-        specifier: workspace:*
-        version: link:../../theia/packages/ai-codex
       '@theia/ai-copilot':
         specifier: workspace:*
         version: link:../../theia/packages/ai-copilot
